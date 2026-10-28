@@ -60,7 +60,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
       className="w-full bg-[#EFEFEF] p-3 sm:p-4 lg:p-6 pb-6 sm:pb-8"
     >
       {/* Inset White Card (14px radius) */}
-      <div className="mx-auto max-w-[1360px] rounded-[14px] bg-white p-8 sm:p-12 lg:p-16 text-[#26102C]">
+      <div className="mx-auto max-w-[1600px] rounded-[14px] bg-white p-8 sm:p-12 lg:p-16 text-[#26102C]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
           {/* Brand Column (4 of 12) */}
           <div className="lg:col-span-4 flex flex-col justify-between">

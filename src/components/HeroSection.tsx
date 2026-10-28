@@ -94,7 +94,7 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
       className="hero-silk-sheen relative w-full overflow-hidden text-white"
     >
       {/* ================= HEADER ================= */}
-      <header className="relative z-30 mx-auto flex w-full max-w-[1360px] items-center justify-between px-5 pt-6 pb-4 sm:px-8 lg:px-12">
+      <header className="relative z-30 mx-auto flex w-full max-w-[1600px] items-center justify-between px-5 pt-6 pb-4 sm:px-8 lg:px-8">
         {/* Wordmark */}
         <a
           href="#"
@@ -251,7 +251,7 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
       )}
 
       {/* ================= HERO MAIN CONTENT ================= */}
-      <div className="relative mx-auto w-full max-w-[1360px] px-5 sm:px-8 lg:px-12 pt-6 pb-12 sm:pb-16 lg:pb-0 lg:min-h-[clamp(34rem,46vw,45rem)] flex flex-col justify-between">
+      <div className="relative mx-auto w-full max-w-[1600px] px-5 sm:px-8 lg:px-8 pt-6 pb-12 sm:pb-16 lg:pb-0 lg:min-h-[clamp(34rem,46vw,45rem)] flex flex-col justify-between">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-center relative z-10 my-auto">
           {/* Left Column (Content, 6/12) */}
           <div ref={animElementsRef} className="lg:col-span-6 lg:pr-8 py-4 lg:py-12 z-20">

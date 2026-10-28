@@ -65,9 +65,9 @@ export function CategoriesSection() {
     <section
       id="categories"
       aria-labelledby="categories-heading"
-      className="w-full bg-[#EFEFEF] py-14 sm:py-20 px-5 sm:px-8 lg:px-12"
+      className="w-full bg-[#EFEFEF] py-14 sm:py-20 px-5 sm:px-8 lg:px-8"
     >
-      <div className="mx-auto max-w-[1280px]">
+      <div className="mx-auto max-w-[1600px]">
         {/* Section Header */}
         <div className="flex items-center justify-between gap-4 mb-8 sm:mb-12">
           <h2

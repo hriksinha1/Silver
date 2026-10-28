@@ -8,9 +8,9 @@ export function CraftsmanshipSection() {
     <section
       id="craftsmanship"
       aria-labelledby="craftsmanship-heading"
-      className="w-full bg-[#EFEFEF] py-10 sm:py-16 px-5 sm:px-8 lg:px-12"
+      className="w-full bg-[#EFEFEF] py-10 sm:py-16 px-5 sm:px-8 lg:px-8"
     >
-      <div className="mx-auto max-w-[1280px]">
+      <div className="mx-auto max-w-[1600px]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
           {/* Left Large Craftsmanship Image */}
           <div className="relative overflow-hidden rounded-[2px] bg-white min-h-[340px] sm:min-h-[420px] lg:min-h-full">
