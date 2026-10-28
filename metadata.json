@@ -1,6 +1,6 @@
 {
-  "name": "Aurelia | Luxury Jewellery",
-  "description": "Discover timeless jewellery pieces that blend elegance, craftsmanship, and modern sophistication.",
+  "name": "Silveram | Luxury Jewellery",
+  "description": "Discover Silveram's timeless jewellery, crafted to blend elegance, quality, and modern sophistication.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

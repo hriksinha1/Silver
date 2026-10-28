@@ -88,7 +88,7 @@ export const IMAGES: Record<string, ImageManifestItem> = {
     src: '/images/why-portrait.webp',
     width: 790,
     height: 740,
-    alt: 'Editorial portrait of woman wearing Aurelia statement earrings and bracelet',
+    alt: 'Editorial portrait of woman wearing Silveram statement earrings and bracelet',
     type: 'portrait',
   },
   avatar1: {

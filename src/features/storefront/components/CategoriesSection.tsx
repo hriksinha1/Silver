@@ -1,62 +1,7 @@
-import React from 'react';
-import Button from './Button';
-import SafeImage from './SafeImage';
-import { IMAGES } from '../data/images';
-import { useCart } from '../context/CartContext';
-
-interface CategoryItem {
-  id: string;
-  name: string;
-  count: string;
-  description: string;
-  image: string;
-  type: 'ring' | 'necklace' | 'bracelet' | 'earring';
-  targetProductId: string;
-  targetProductName: string;
-}
-
-const CATEGORIES: CategoryItem[] = [
-  {
-    id: 'cat-rings',
-    name: 'Rings',
-    count: '648 Products',
-    description: 'Elegant designs for every occasion',
-    image: IMAGES.catRings.src,
-    type: 'ring',
-    targetProductId: 'product-celeste-diamond-ring',
-    targetProductName: 'Celeste Diamond Ring',
-  },
-  {
-    id: 'cat-necklaces',
-    name: 'Necklaces',
-    count: '543 Products',
-    description: 'Timeless pieces that elevate your style',
-    image: IMAGES.catNecklaces.src,
-    type: 'necklace',
-    targetProductId: 'product-minimal-diamond-necklace',
-    targetProductName: 'Minimal Diamond Necklace',
-  },
-  {
-    id: 'cat-bracelets',
-    name: 'Bracelets',
-    count: '823 Products',
-    description: 'Crafted to complement your every move',
-    image: IMAGES.catBracelets.src,
-    type: 'bracelet',
-    targetProductId: 'product-solis-charm-bracelet',
-    targetProductName: 'Solis Charm Bracelet',
-  },
-  {
-    id: 'cat-earrings',
-    name: 'Earrings',
-    count: '1,321 Products',
-    description: 'Subtle shine or bold statements',
-    image: IMAGES.catEarrings.src,
-    type: 'earring',
-    targetProductId: 'product-floral-pattern-earring',
-    targetProductName: 'Floral Pattern Earring',
-  },
-];
+import Button from '@/shared/ui/Button';
+import SafeImage from '@/shared/ui/SafeImage';
+import { useCart } from '@/features/cart/context/CartContext';
+import { CATEGORIES } from '@/features/storefront/data/catalog';
 
 export function CategoriesSection() {
   const { highlightProduct } = useCart();

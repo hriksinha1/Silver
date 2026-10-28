@@ -1,48 +1,8 @@
-import React from 'react';
-import Button from './Button';
-import SafeImage from './SafeImage';
-import { PlusIcon } from './icons';
-import { IMAGES } from '../data/images';
-import { useCart } from '../context/CartContext';
-
-interface ProductItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  type: 'ring' | 'necklace' | 'earring' | 'bracelet';
-}
-
-const PRODUCTS: ProductItem[] = [
-  {
-    id: 'product-celeste-diamond-ring',
-    name: 'Celeste Diamond Ring',
-    price: 249,
-    image: IMAGES.productRing.src,
-    type: 'ring',
-  },
-  {
-    id: 'product-minimal-diamond-necklace',
-    name: 'Minimal Diamond Necklace',
-    price: 199,
-    image: IMAGES.productNecklace.src,
-    type: 'necklace',
-  },
-  {
-    id: 'product-floral-pattern-earring',
-    name: 'Floral Pattern Earring',
-    price: 149,
-    image: IMAGES.productEarring.src,
-    type: 'earring',
-  },
-  {
-    id: 'product-solis-charm-bracelet',
-    name: 'Solis Charm Bracelet',
-    price: 189,
-    image: IMAGES.productBracelet.src,
-    type: 'bracelet',
-  },
-];
+import Button from '@/shared/ui/Button';
+import SafeImage from '@/shared/ui/SafeImage';
+import { PlusIcon } from '@/shared/ui/icons';
+import { useCart } from '@/features/cart/context/CartContext';
+import { PRODUCTS } from '@/features/storefront/data/catalog';
 
 export function BestSellersSection() {
   const { addToCart, highlightedProductId } = useCart();

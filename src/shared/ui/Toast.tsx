@@ -1,6 +1,5 @@
-import React from 'react';
-import { useCart } from '../context/CartContext';
-import { CartIcon } from './icons';
+import { useCart } from '@/features/cart/context/CartContext';
+import { CartIcon } from '@/shared/ui/icons';
 
 export function Toast() {
   const { toastMessage, liveAnnouncement } = useCart();

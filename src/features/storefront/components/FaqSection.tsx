@@ -1,45 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { PlusIcon, MinusIcon } from './icons';
-
-interface FaqItem {
-  id: string;
-  number: string;
-  question: string;
-  answer: string;
-}
-
-const FAQS: FaqItem[] = [
-  {
-    id: 'faq-1',
-    number: '01',
-    question: 'Are your jewellery pieces made with real materials?',
-    answer: 'Our pieces are crafted from premium metals and carefully selected stones. Each product page lists its exact materials. This is demonstration copy.',
-  },
-  {
-    id: 'faq-2',
-    number: '02',
-    question: 'Do you offer a warranty on your products?',
-    answer: 'Warranty terms vary by piece and are shown on each product page. This demo does not define real warranty terms.',
-  },
-  {
-    id: 'faq-3',
-    number: '03',
-    question: 'How long does shipping take?',
-    answer: 'Delivery times depend on your location and are shown at checkout. This demo does not process orders.',
-  },
-  {
-    id: 'faq-4',
-    number: '04',
-    question: 'Can I return or exchange my order?',
-    answer: 'Return and exchange options are explained in our policy. In this demo, no real orders exist.',
-  },
-  {
-    id: 'faq-5',
-    number: '05',
-    question: 'Is your jewellery suitable for sensitive skin?',
-    answer: 'Materials differ by piece, so please check each product\'s details. If you have known sensitivities, speak with a medical professional before wearing new jewellery.',
-  },
-];
+import { PlusIcon, MinusIcon } from '@/shared/ui/icons';
+import { FAQS } from '@/features/storefront/data/content';
 
 interface FaqSectionProps {
   activeFaqId?: string | null;

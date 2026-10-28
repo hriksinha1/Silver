@@ -1,7 +1,6 @@
-import React from 'react';
-import Button from './Button';
-import SafeImage from './SafeImage';
-import { IMAGES } from '../data/images';
+import Button from '@/shared/ui/Button';
+import SafeImage from '@/shared/ui/SafeImage';
+import { IMAGES } from '@/shared/data/images';
 
 export function CraftsmanshipSection() {
   return (
@@ -52,7 +51,7 @@ export function CraftsmanshipSection() {
                 variant="primary"
                 size="md"
                 onClick={() => {
-                  document.getElementById('why-aurelia')?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById('why-silveram')?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
                 See More

@@ -3,22 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-import { CartProvider } from './context/CartContext';
-import HeroSection from './components/HeroSection';
-import CategoriesSection from './components/CategoriesSection';
-import CraftsmanshipSection from './components/CraftsmanshipSection';
-import BestSellersSection from './components/BestSellersSection';
-import WhyChooseSection from './components/WhyChooseSection';
-import TestimonialsSection from './components/TestimonialsSection';
-import FaqSection from './components/FaqSection';
-import FooterSection from './components/FooterSection';
-import CartDrawer from './components/CartDrawer';
-import PolicyModal from './components/PolicyModal';
-import Toast from './components/Toast';
+import { CartProvider } from '@/features/cart/context/CartContext';
+import CartDrawer from '@/features/cart/components/CartDrawer';
+import PolicyModal from '@/features/policies/components/PolicyModal';
+import BestSellersSection from '@/features/storefront/components/BestSellersSection';
+import CategoriesSection from '@/features/storefront/components/CategoriesSection';
+import CraftsmanshipSection from '@/features/storefront/components/CraftsmanshipSection';
+import FaqSection from '@/features/storefront/components/FaqSection';
+import FooterSection from '@/features/storefront/components/FooterSection';
+import HeroSection from '@/features/storefront/components/HeroSection';
+import TestimonialsSection from '@/features/storefront/components/TestimonialsSection';
+import WhyChooseSection from '@/features/storefront/components/WhyChooseSection';
+import Toast from '@/shared/ui/Toast';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -36,7 +36,7 @@ export default function App() {
 
     const ctx = gsap.context(() => {
       const animatedSections = document.querySelectorAll(
-        '#categories, #craftsmanship, #best-sellers, #why-aurelia, #faq'
+        '#categories, #craftsmanship, #best-sellers, #why-silveram, #faq'
       );
 
       animatedSections.forEach((sec) => {
@@ -108,7 +108,7 @@ export default function App() {
             {/* Best Sellers (Continuous grey #EFEFEF) */}
             <BestSellersSection />
 
-            {/* Why Choose Aurelia (Continuous grey #EFEFEF) */}
+            {/* Why Choose Silveram (Continuous grey #EFEFEF) */}
             <WhyChooseSection />
 
             {/* Loved by Our Customers (Full-width white band) */}

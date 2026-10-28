@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import gsap from 'gsap';
-import { CartIcon, MenuIcon, CloseIcon, RingMotifIcon } from './icons';
-import Button from './Button';
-import SafeImage from './SafeImage';
-import { IMAGES } from '../data/images';
-import { useCart } from '../context/CartContext';
+import { CartIcon, MenuIcon, CloseIcon, RingMotifIcon } from '@/shared/ui/icons';
+import Button from '@/shared/ui/Button';
+import SafeImage from '@/shared/ui/SafeImage';
+import { IMAGES } from '@/shared/data/images';
+import { useCart } from '@/features/cart/context/CartContext';
 
 interface HeroSectionProps {
   cartTriggerRef: React.RefObject<HTMLButtonElement | null>;
@@ -99,9 +99,9 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
         <a
           href="#"
           className="font-heading text-2xl font-light tracking-[0.08em] text-white transition-opacity hover:opacity-90 sm:text-3xl"
-          aria-label="Aurelia Home"
+          aria-label="Silveram Home"
         >
-          Aurelia
+          Silveram
         </a>
 
         {/* Desktop Navigation Links */}
@@ -131,8 +131,8 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
             Our Store
           </a>
           <a
-            href="#why-aurelia"
-            onClick={(e) => handleNavClick(e, 'why-aurelia')}
+            href="#why-silveram"
+            onClick={(e) => handleNavClick(e, 'why-silveram')}
             className="transition-colors hover:text-white"
           >
             About
@@ -221,8 +221,8 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
               Our Store
             </a>
             <a
-              href="#why-aurelia"
-              onClick={(e) => handleNavClick(e, 'why-aurelia')}
+              href="#why-silveram"
+              onClick={(e) => handleNavClick(e, 'why-silveram')}
               className="py-2 border-b border-white/10 hover:text-white"
             >
               About

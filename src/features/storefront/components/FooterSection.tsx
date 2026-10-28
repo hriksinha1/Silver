@@ -6,8 +6,8 @@ import {
   LinkedinIcon,
   YoutubeIcon,
   ArrowRightIcon,
-} from './icons';
-import { useCart } from '../context/CartContext';
+} from '@/shared/ui/icons';
+import { useCart } from '@/features/cart/context/CartContext';
 
 interface FooterSectionProps {
   onOpenPolicy: (title: string) => void;
@@ -66,7 +66,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
           <div className="lg:col-span-4 flex flex-col justify-between">
             <div>
               <span id="footer-brand-title" className="font-heading text-3xl font-light tracking-[0.06em] text-[#69388F]">
-                Aurelia
+                Silveram
               </span>
               <p className="mt-4 max-w-[32ch] font-sans text-xs sm:text-sm leading-relaxed text-[#4E4852]">
                 Fine jewellery designed for everyday elegance and life's defining moments. Crafted with precision and ethically sourced materials.
@@ -84,7 +84,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-9 w-9 items-center justify-center rounded-[2px] border border-[#DCD7DF] text-[#4E4852] transition-colors hover:border-[#69388F] hover:text-[#69388F]"
-                  aria-label="Aurelia on Facebook (opens in a new tab)"
+                  aria-label="Silveram on Facebook (opens in a new tab)"
                 >
                   <FacebookIcon size={16} />
                 </a>
@@ -93,7 +93,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-9 w-9 items-center justify-center rounded-[2px] border border-[#DCD7DF] text-[#4E4852] transition-colors hover:border-[#69388F] hover:text-[#69388F]"
-                  aria-label="Aurelia on X (opens in a new tab)"
+                  aria-label="Silveram on X (opens in a new tab)"
                 >
                   <XIcon size={15} />
                 </a>
@@ -102,7 +102,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-9 w-9 items-center justify-center rounded-[2px] border border-[#DCD7DF] text-[#4E4852] transition-colors hover:border-[#69388F] hover:text-[#69388F]"
-                  aria-label="Aurelia on Instagram (opens in a new tab)"
+                  aria-label="Silveram on Instagram (opens in a new tab)"
                 >
                   <InstagramIcon size={16} />
                 </a>
@@ -111,7 +111,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-9 w-9 items-center justify-center rounded-[2px] border border-[#DCD7DF] text-[#4E4852] transition-colors hover:border-[#69388F] hover:text-[#69388F]"
-                  aria-label="Aurelia on LinkedIn (opens in a new tab)"
+                  aria-label="Silveram on LinkedIn (opens in a new tab)"
                 >
                   <LinkedinIcon size={16} />
                 </a>
@@ -120,7 +120,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex h-9 w-9 items-center justify-center rounded-[2px] border border-[#DCD7DF] text-[#4E4852] transition-colors hover:border-[#69388F] hover:text-[#69388F]"
-                  aria-label="Aurelia on YouTube (opens in a new tab)"
+                  aria-label="Silveram on YouTube (opens in a new tab)"
                 >
                   <YoutubeIcon size={16} />
                 </a>
@@ -177,7 +177,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
             <ul className="mt-4 space-y-2.5 text-xs sm:text-sm text-[#4E4852]">
               <li>
                 <button
-                  onClick={() => handleSmoothScroll('why-aurelia')}
+                  onClick={() => handleSmoothScroll('why-silveram')}
                   className="hover:text-[#69388F] cursor-pointer"
                 >
                   About Us
@@ -193,7 +193,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
               </li>
               <li>
                 <a
-                  href="mailto:careers@aurelia.example"
+                  href="mailto:careers@silveram.example"
                   className="hover:text-[#69388F]"
                 >
                   Careers
@@ -210,7 +210,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
             <ul className="mt-4 space-y-2.5 text-xs sm:text-sm text-[#4E4852]">
               <li>
                 <a
-                  href="mailto:hello@aurelia.example"
+                  href="mailto:hello@silveram.example"
                   className="hover:text-[#69388F]"
                 >
                   Contact
@@ -289,7 +289,7 @@ export function FooterSection({ onOpenPolicy, onOpenFaqItem }: FooterSectionProp
 
         {/* Bottom Bar Separated by hairline divider */}
         <div className="mt-12 sm:mt-16 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-[#EFEFEF] pt-6 text-xs text-[#4E4852]">
-          <p>© 2026 Aurelia. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Silveram. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <button
               onClick={() => onOpenPolicy('Privacy Policy')}

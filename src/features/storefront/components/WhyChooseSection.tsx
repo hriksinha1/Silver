@@ -1,51 +1,23 @@
-import React from 'react';
-import SafeImage from './SafeImage';
-import { LayersIcon, HandCraftIcon, HeartIcon, ShieldIcon } from './icons';
-import { IMAGES } from '../data/images';
-
-const REASONS = [
-  {
-    id: 'reason-materials',
-    title: 'Premium Materials',
-    description: 'Carefully selected metals and ethically sourced stones',
-    icon: LayersIcon,
-  },
-  {
-    id: 'reason-craft',
-    title: 'Handcrafted Excellence',
-    description: 'Designed with precision and attention to detail',
-    icon: HandCraftIcon,
-  },
-  {
-    id: 'reason-quality',
-    title: 'Lifetime Quality',
-    description: 'Jewellery made to last for generations to come',
-    icon: HeartIcon,
-  },
-  {
-    id: 'reason-secure',
-    title: 'Secure Shopping',
-    description: 'Safe payments and trusted white-glove delivery',
-    icon: ShieldIcon,
-  },
-];
+import SafeImage from '@/shared/ui/SafeImage';
+import { IMAGES } from '@/shared/data/images';
+import { REASONS } from '@/features/storefront/data/content';
 
 export function WhyChooseSection() {
   return (
     <section
-      id="why-aurelia"
-      aria-labelledby="why-aurelia-heading"
+      id="why-silveram"
+      aria-labelledby="why-silveram-heading"
       className="w-full bg-[#EFEFEF] py-14 sm:py-20 px-5 sm:px-8 lg:px-8"
     >
       <div className="mx-auto max-w-[1600px]">
         {/* Centered Heading */}
         <div className="text-center mb-10 sm:mb-14">
           <h2
-            id="why-aurelia-heading"
+            id="why-silveram-heading"
             tabIndex={-1}
             className="font-heading text-2xl sm:text-3xl lg:text-4xl font-normal text-[#26102C] tracking-tight focus:outline-none"
           >
-            Why Choose Aurelia
+            Why Choose Silveram
           </h2>
         </div>
 

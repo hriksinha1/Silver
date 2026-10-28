@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { useCart } from '../context/CartContext';
-import { CloseIcon, PlusIcon, MinusIcon, CartIcon } from './icons';
-import Button from './Button';
+import { useCart } from '@/features/cart/context/CartContext';
+import { CloseIcon, PlusIcon, MinusIcon, CartIcon } from '@/shared/ui/icons';
+import Button from '@/shared/ui/Button';
 
 interface CartDrawerProps {
   triggerRef?: React.RefObject<HTMLButtonElement | null>;

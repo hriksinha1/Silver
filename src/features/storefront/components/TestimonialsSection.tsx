@@ -1,36 +1,7 @@
-import React, { useRef } from 'react';
-import { QuoteIcon } from './icons';
-import SafeImage from './SafeImage';
-import { IMAGES } from '../data/images';
-
-// Sample demonstration testimonials (not fabricated metrics)
-interface TestimonialItem {
-  id: string;
-  quote: string;
-  author: string;
-  avatar: string;
-}
-
-const TESTIMONIALS: TestimonialItem[] = [
-  {
-    id: 'test-1',
-    quote: 'Absolutely love the craftsmanship and detail. The quality feels premium and looks stunning. I wear it every day with confidence.',
-    author: 'Sophia M.',
-    avatar: IMAGES.avatar1.src,
-  },
-  {
-    id: 'test-2',
-    quote: 'Such a luxurious feel at a great value. The shine and finish are truly eye-catching. Will definitely be buying again.',
-    author: 'Emma L.',
-    avatar: IMAGES.avatar2.src,
-  },
-  {
-    id: 'test-3',
-    quote: "Exceeded all my expectations in every way. The design is timeless and incredibly refined. I've received so many compliments already.",
-    author: 'Olivia R.',
-    avatar: IMAGES.avatar3.src,
-  },
-];
+import { useRef } from 'react';
+import { QuoteIcon } from '@/shared/ui/icons';
+import SafeImage from '@/shared/ui/SafeImage';
+import { TESTIMONIALS } from '@/features/storefront/data/content';
 
 export function TestimonialsSection() {
   const carouselRef = useRef<HTMLDivElement>(null);

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { CloseIcon } from './icons';
-import Button from './Button';
+import { useEffect, useRef } from 'react';
+import { CloseIcon } from '@/shared/ui/icons';
+import Button from '@/shared/ui/Button';
 
 interface PolicyModalProps {
   isOpen: boolean;
@@ -67,7 +67,7 @@ export function PolicyModal({ isOpen, onClose, title }: PolicyModalProps) {
             Demonstration copy: replace with your own policy before commercial production.
           </div>
           <p>
-            Welcome to Aurelia. This website is a portfolio landing page demonstration created to exhibit modern frontend design, typography, layout rhythm, and responsive craftsmanship.
+            Welcome to Silveram. This website is a portfolio landing page demonstration created to exhibit modern frontend design, typography, layout rhythm, and responsive craftsmanship.
           </p>
           <p>
             No user tracking cookies or persistent identifiers are transmitted to third parties. Any cart items and interactions reside solely within your browser session memory.

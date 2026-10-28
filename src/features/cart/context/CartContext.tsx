@@ -26,12 +26,13 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'aurelia_cart_items';
+const STORAGE_KEY = 'silveram_cart_items';
+const LEGACY_STORAGE_KEY = 'aurelia_cart_items';
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -46,6 +47,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       // storage unavailable or full
     }
