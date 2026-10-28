@@ -1,0 +1,150 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useRef, useState, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+import { CartProvider } from './context/CartContext';
+import HeroSection from './components/HeroSection';
+import CategoriesSection from './components/CategoriesSection';
+import CraftsmanshipSection from './components/CraftsmanshipSection';
+import BestSellersSection from './components/BestSellersSection';
+import WhyChooseSection from './components/WhyChooseSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import FaqSection from './components/FaqSection';
+import FooterSection from './components/FooterSection';
+import CartDrawer from './components/CartDrawer';
+import PolicyModal from './components/PolicyModal';
+import Toast from './components/Toast';
+
+gsap.registerPlugin(ScrollTrigger);
+
+export default function App() {
+  const [isPolicyOpen, setIsPolicyOpen] = useState(false);
+  const [policyTitle, setPolicyTitle] = useState('Privacy Policy');
+  const [activeFaqId, setActiveFaqId] = useState<string | null>(null);
+  const cartTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
+
+  // GSAP ScrollTrigger for restrained section reveals
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    const ctx = gsap.context(() => {
+      const animatedSections = document.querySelectorAll(
+        '#categories, #craftsmanship, #best-sellers, #why-aurelia, #faq'
+      );
+
+      animatedSections.forEach((sec) => {
+        const heading = sec.querySelector('h2');
+        const cards = sec.querySelectorAll('article, .grid > div');
+
+        if (heading) {
+          gsap.from(heading, {
+            scrollTrigger: {
+              trigger: heading,
+              start: 'top 85%',
+              once: true,
+            },
+            y: 20,
+            opacity: 0,
+            duration: 0.6,
+            ease: 'power2.out',
+            clearProps: 'all',
+          });
+        }
+
+        if (cards && cards.length > 0) {
+          gsap.from(cards, {
+            scrollTrigger: {
+              trigger: cards[0],
+              start: 'top 85%',
+              once: true,
+            },
+            y: 24,
+            opacity: 0,
+            duration: 0.7,
+            stagger: 0.08,
+            ease: 'power2.out',
+            clearProps: 'all',
+          });
+        }
+      });
+    }, surfaceRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <CartProvider>
+      {/* Skip to Content for Keyboard Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-[2px] focus:bg-[#69388F] focus:px-4 focus:py-2.5 focus:text-xs focus:font-medium focus:text-white focus:shadow-lg focus:outline-none"
+      >
+        Skip to main content
+      </a>
+
+      {/* Outer Page Frame (bg-[#5F496E], clamp padding) */}
+      <div className="min-h-screen w-full bg-[#5F496E] p-0 sm:p-2 md:p-4 lg:p-[clamp(12px,3vw,48px)] transition-all">
+        {/* Main Centered Surface (max-w 1360px, rounded corners where frame shows) */}
+        <div
+          ref={surfaceRef}
+          className="mx-auto w-full max-w-[1360px] overflow-x-clip bg-[#26102C] shadow-2xl transition-all"
+        >
+          {/* Hero Section */}
+          <HeroSection cartTriggerRef={cartTriggerRef} />
+
+          {/* Main Landmark for sections */}
+          <main id="main-content" tabIndex={-1} className="focus:outline-none">
+            {/* Shop by Category (Continuous grey #EFEFEF) */}
+            <CategoriesSection />
+
+            {/* Timeless Craftsmanship (Continuous grey #EFEFEF) */}
+            <CraftsmanshipSection />
+
+            {/* Best Sellers (Continuous grey #EFEFEF) */}
+            <BestSellersSection />
+
+            {/* Why Choose Aurelia (Continuous grey #EFEFEF) */}
+            <WhyChooseSection />
+
+            {/* Loved by Our Customers (Full-width white band) */}
+            <TestimonialsSection />
+
+            {/* Frequently Asked Questions (Grey #EFEFEF) */}
+            <FaqSection activeFaqId={activeFaqId} onFaqChange={setActiveFaqId} />
+          </main>
+
+          {/* Footer Card (Inset white card) */}
+          <FooterSection
+            onOpenPolicy={(title) => {
+              setPolicyTitle(title);
+              setIsPolicyOpen(true);
+            }}
+            onOpenFaqItem={(faqId) => {
+              setActiveFaqId(faqId);
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Cart Slide-Over Drawer */}
+      <CartDrawer triggerRef={cartTriggerRef} />
+
+      {/* Policy Modal Dialog */}
+      <PolicyModal
+        isOpen={isPolicyOpen}
+        onClose={() => setIsPolicyOpen(false)}
+        title={policyTitle}
+      />
+
+      {/* Toast and Live Region */}
+      <Toast />
+    </CartProvider>
+  );
+}

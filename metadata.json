@@ -1,0 +1,6 @@
+{
+  "name": "Aurelia | Luxury Jewellery",
+  "description": "Discover timeless jewellery pieces that blend elegance, craftsmanship, and modern sophistication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

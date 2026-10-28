@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "@fontsource-variable/league-spartan";
+@import "@fontsource-variable/dm-sans";
+
+@theme {
+  --color-aubergine: #26102C;
+  --color-frame: #5F496E;
+  --color-primary: #69388F;
+  --color-primary-hover: #7B43A6;
+  --color-primary-active: #572E77;
+  --color-surface-neutral: #EFEFEF;
+  --color-gold: #C9A45B;
+  --color-text-muted: #4E4852;
+  --color-border-subtle: #DCD7DF;
+
+  --font-heading: 'League Spartan Variable', 'League Spartan', sans-serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', sans-serif;
+
+  --radius-sm: 2px;
+  --radius-footer: 14px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-body);
+    color: var(--color-aubergine);
+    background-color: var(--color-frame);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* High contrast accessible focus indicators */
+  :focus-visible {
+    outline: 2px solid #69388F;
+    outline-offset: 2px;
+  }
+}
+
+/* Silk-like subtle sheen for Hero */
+.hero-silk-sheen {
+  background-color: #26102C;
+  background-image: 
+    radial-gradient(ellipse 65% 55% at 75% 30%, rgba(138, 77, 185, 0.18) 0%, transparent 70%),
+    linear-gradient(135deg, rgba(85, 36, 107, 0.28) 0%, transparent 55%),
+    linear-gradient(45deg, transparent 40%, rgba(201, 164, 91, 0.04) 75%, transparent 100%);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Scroll margin for anchor links */
+section[id] {
+  scroll-margin-top: 2rem;
+}
