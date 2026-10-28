@@ -89,12 +89,10 @@ export default function App() {
         Skip to main content
       </a>
 
-      {/* Outer Page Frame (bg-[#5F496E], clamp padding) */}
-      <div className="min-h-screen w-full bg-[#5F496E] p-0 sm:p-2 md:p-4 lg:p-[clamp(12px,3vw,48px)] transition-all">
-        {/* Main Centered Surface (max-w 1360px, rounded corners where frame shows) */}
+      <div className="min-h-screen w-full bg-[#5F496E]">
         <div
           ref={surfaceRef}
-          className="mx-auto w-full max-w-[1360px] overflow-x-clip bg-[#26102C] shadow-2xl transition-all"
+          className="min-h-screen w-full overflow-x-clip bg-[#26102C] shadow-2xl"
         >
           {/* Hero Section */}
           <HeroSection cartTriggerRef={cartTriggerRef} />
