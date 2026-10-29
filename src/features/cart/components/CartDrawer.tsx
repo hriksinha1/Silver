@@ -158,18 +158,18 @@ export function CartDrawer({ triggerRef, onCheckout }: CartDrawerProps) {
           )}
         </div>
 
-        {/* Footer with subtotal and demo disclaimer */}
+        {/* Footer with estimated subtotal */}
         {cart.length > 0 && (
           <div className="border-t border-[#E2DEE5] bg-[#FAF8FB] p-6">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-[#4E4852]">Subtotal</span>
+              <span className="text-sm font-medium text-[#4E4852]">Estimated subtotal</span>
               <span className="font-heading text-xl font-bold tabular-nums text-[#26102C]">
                 {formatINR(subtotal)}
               </span>
             </div>
 
             <p className="mb-4 text-xs leading-relaxed text-[#4E4852]">
-              Taxes and complimentary shipping calculated at checkout.
+              Shipping and applicable taxes are confirmed at checkout.
             </p>
 
             <Button

@@ -137,7 +137,6 @@ export default function CheckoutDialog({
         name: fullName.trim(),
       });
       if (!result.userId) throw new Error('Unable to start email verification.');
-      await account.createEmailToken(result.userId, normalizedEmail);
       setEmail(normalizedEmail);
       setUserId(result.userId);
       setStep('code');
@@ -341,7 +340,7 @@ export default function CheckoutDialog({
             >
               <div>
                 <h3 className="font-heading text-xl font-medium">Sign in or continue as a guest</h3>
-                <p className="mt-1 text-sm leading-relaxed text-[#4E4852]">
+                    <p className="mt-1 text-sm leading-relaxed text-[#4E4852]">
                   We’ll email you a one-time six-digit verification code before checkout.
                   No password is required.
                 </p>
