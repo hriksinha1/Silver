@@ -5,6 +5,7 @@ const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
 const functionId = import.meta.env.VITE_APPWRITE_STORE_FUNCTION_ID;
 
 export const isAppwriteConfigured = Boolean(endpoint && projectId && functionId);
+export const isCheckoutEnabled = import.meta.env.VITE_CHECKOUT_ENABLED === 'true';
 
 const client = new Client();
 
@@ -22,6 +23,9 @@ export async function callStoreFunction<T>(
 ): Promise<T> {
   if (!isAppwriteConfigured) {
     throw new Error('Checkout is not configured yet. Please contact the store.');
+  }
+  if (!isCheckoutEnabled) {
+    throw new Error('Checkout is not enabled yet. Please contact the store.');
   }
 
   const headers: Record<string, string> = {};

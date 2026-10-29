@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ID } from 'appwrite';
-import { account, callStoreFunction } from '@/shared/lib/appwrite';
+import { account, callStoreFunction, isCheckoutEnabled } from '@/shared/lib/appwrite';
 import { formatINR } from '@/shared/lib/money';
 import { CloseIcon } from '@/shared/ui/icons';
 import Button from '@/shared/ui/Button';
@@ -354,6 +354,13 @@ export default function CheckoutDialog({
             })}
           </ol>
 
+          {!isCheckoutEnabled ? (
+            <p className="rounded-[2px] border border-[#E2DEE5] bg-[#FAF8FB] px-4 py-3 text-sm leading-relaxed text-[#4E4852]" role="status">
+              Secure checkout is being prepared. Please contact the store while Appwrite,
+              payment, delivery, and policy settings are completed.
+            </p>
+          ) : (
+            <>
           {step === 'email' && (
             <form
               className="space-y-4"
@@ -518,6 +525,8 @@ export default function CheckoutDialog({
             <p className="mt-4 rounded-[2px] border border-red-200 bg-red-50 px-3 py-2.5 text-xs leading-relaxed text-red-800" role="alert">
               {error}
             </p>
+          )}
+            </>
           )}
         </div>
       </section>

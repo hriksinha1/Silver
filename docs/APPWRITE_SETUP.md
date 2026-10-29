@@ -42,6 +42,7 @@ Set these Function variables/secrets in Appwrite (never add the API key or Razor
 | `APPWRITE_ORDERS_COLLECTION_ID` | ID of the `orders` collection |
 | `RAZORPAY_KEY_ID` | Razorpay key ID (not secret) |
 | `RAZORPAY_KEY_SECRET` | Razorpay secret; store as a secret |
+| `STORE_LIVE_CHECKOUT` | Keep `false` until staging and launch checks pass; set to `true` deliberately to enable Function routes |
 
 Appwrite injects `APPWRITE_FUNCTION_API_ENDPOINT` and `APPWRITE_FUNCTION_PROJECT_ID` into Functions. The Function checks authenticated calls with the Appwrite user JWT, validates every submitted field, rebuilds totals from its own allow-listed catalog, applies order-request idempotency, and verifies Razorpay signatures and captured payment status before marking an order paid.
 
@@ -62,9 +63,10 @@ Copy `.env.example` to `.env.local` and set:
 VITE_APPWRITE_ENDPOINT=https://<your-region>.cloud.appwrite.io/v1
 VITE_APPWRITE_PROJECT_ID=<your-project-id>
 VITE_APPWRITE_STORE_FUNCTION_ID=<deployed-function-id>
+VITE_CHECKOUT_ENABLED=false
 ```
 
-Only these public project identifiers belong in the frontend. Redeploy the frontend after changing them.
+Only these public project identifiers and the checkout toggle belong in the frontend. Keep the toggle `false` until the backend is configured. To test staging, use Razorpay test credentials, set `STORE_LIVE_CHECKOUT=true` in the Function, set `VITE_CHECKOUT_ENABLED=true` in the staging frontend, and redeploy. Keep production off until all launch checks pass; both the UI and backend default to disabled.
 
 ## 6. Before accepting real orders
 

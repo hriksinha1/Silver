@@ -250,6 +250,9 @@ async function createOrder(body, res, log, user) {
     if (existing.amountInPaise !== amountInPaise || existing.itemsJson !== JSON.stringify(items)) {
       return jsonError(res, 409, 'Your bag changed. Refresh checkout before placing the order.');
     }
+    if (existing.shippingAddressJson !== JSON.stringify(shipping)) {
+      return jsonError(res, 409, 'Your delivery details changed. Refresh checkout before placing the order.');
+    }
     if (existing.razorpayOrderId) {
       return res.json(orderResponse(existing, process.env.RAZORPAY_KEY_ID));
     }
@@ -284,7 +287,15 @@ async function createOrder(body, res, log, user) {
       } catch (error) {
         if (error?.code !== 409) throw error;
         order = await databases.getDocument(databaseId, ordersCollectionId, body.requestId);
-        if (order.userId !== user.$id) return jsonError(res, 409, 'This order request is no longer available.');
+        if (
+          order.userId !== user.$id ||
+          order.paymentMethod !== body.paymentMethod ||
+          order.amountInPaise !== amountInPaise ||
+          order.itemsJson !== JSON.stringify(items) ||
+          order.shippingAddressJson !== JSON.stringify(shipping)
+        ) {
+          return jsonError(res, 409, 'This order request is no longer available.');
+        }
       }
     }
 
@@ -381,7 +392,16 @@ export default async ({ req, res, log }) => {
   const path = normalizePath(req.path);
 
   try {
-    const body = readBody(req);
+    if (process.env.STORE_LIVE_CHECKOUT !== 'true') {
+      return jsonError(res, 503, 'Checkout is not enabled yet. Please contact the store.');
+    }
+
+    let body;
+    try {
+      body = readBody(req);
+    } catch {
+      return jsonError(res, 400, 'Invalid request body.');
+    }
     if (req.method !== 'POST') return jsonError(res, 405, 'Method not allowed.');
     if (path === '/auth/start') return await beginEmailOtp(body, res, log);
 
