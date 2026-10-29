@@ -130,7 +130,7 @@ async function ensureDatabase(tablesDB) {
 async function ensureTable(tablesDB, tableId, name) {
   try {
     const table = await tablesDB.getTable(databaseId, tableId);
-    if (!table.rowSecurity || table.permissions.length > 0) {
+    if (!table.rowSecurity || table.$permissions.length > 0) {
       throw new Error(
         `The existing ${tableId} table must have row security enabled and no table-level permissions.`
       );
@@ -279,30 +279,34 @@ async function ensureProductImagesBucket(storage) {
     const bucket = await storage.getBucket(productImagesBucketId);
     if (
       !bucket.fileSecurity ||
-      bucket.permissions.length > 0 ||
+      bucket.$permissions.length > 0 ||
+      !bucket.enabled ||
       !bucket.encryption ||
-      bucket.maximumFileSize > 5 * 1024 * 1024 ||
+      bucket.maximumFileSize !== 5 * 1024 * 1024 ||
+      !bucket.transformations ||
+      !bucket.stripMetadata ||
       bucket.allowedFileExtensions.length !== 1 ||
       bucket.allowedFileExtensions[0] !== 'webp'
     ) {
       throw new Error(
-        'The existing image bucket must be private-by-default, encrypted, limited to WebP files up to 5 MB, and have no bucket-level permissions.'
+        'The existing image bucket must be enabled, file-secured, encrypted, limited to 5 MB WebP files, have image transformations and metadata stripping enabled, and have no bucket-level permissions.'
       );
     }
   } catch (error) {
     if (error.code !== 404) throw error;
-    await storage.createBucket(
-      productImagesBucketId,
-      'Silveram Product Images',
-      [],
-      true,
-      true,
-      5 * 1024 * 1024,
-      ['webp'],
-      undefined,
-      true,
-      false
-    );
+    await storage.createBucket({
+      bucketId: productImagesBucketId,
+      name: 'Silveram Product Images',
+      description: 'Public product photos only; do not store customer or order files.',
+      permissions: [],
+      fileSecurity: true,
+      enabled: true,
+      maximumFileSize: 5 * 1024 * 1024,
+      allowedFileExtensions: ['webp'],
+      encryption: true,
+      transformations: true,
+      stripMetadata: true,
+    });
     console.log(`Created private product image bucket: ${productImagesBucketId}`);
   }
 }

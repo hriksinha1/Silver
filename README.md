@@ -39,16 +39,18 @@ npm run preview
 
 `npm run build` type-checks the project before creating the production bundle in `dist/`.
 
-## Demo behavior and production integration
+## Storefront and backend status
 
-This repository is a frontend demonstration, not a complete commerce backend:
+The storefront includes a checkout interface and an Appwrite Function integration for six-digit email OTP, order creation, and Razorpay verification. Appwrite's free plan uses TablesDB Serverless for the `products` and `orders` tables. Checkout is intentionally disabled until the Function is deployed and the remaining production controls are implemented and tested.
 
-- Cart state is stored in the browser; checkout does not process payments.
-- Newsletter signup validates locally and does not transmit or store addresses.
-- Product and testimonial content is illustrative.
-- Replace example policy text, contact addresses, and social links before launch.
+The backend resource map, authentication/permissions model, product CRUD workflow, provisioning steps, schema, Function configuration, and production blockers are documented in [docs/APPWRITE_SETUP.md](./docs/APPWRITE_SETUP.md).
 
-Before using this as a live storefront, connect trusted server-side services for product and inventory data, customer accounts, order processing, payment, newsletter delivery, and policy content. Validate all inputs and prices on the server; do not treat browser state as authoritative.
+Important launch constraints:
+
+- The Appwrite product table is authoritative for server-side prices and availability. Keep its rows aligned with the presentation catalog in `src/features/storefront/data/catalog.ts`.
+- Product and order changes are not public CRUD operations. Use Appwrite Console or a trusted server-side tool with a restricted API key; never put API keys or payment secrets in frontend code or `VITE_*` variables.
+- Inventory is checked but not atomically reserved, so concurrent orders may oversell. Do not enable live checkout until reservations, payment reconciliation, policies, and operational processes are complete.
+- Newsletter signup, testimonials, product copy, policy text, contact details, stock, and prices still require real business data and review.
 
 ## Assets
 

@@ -67,7 +67,7 @@ export function PolicyModal({ isOpen, onClose, title }: PolicyModalProps) {
             This {title.toLowerCase()} has not been finalized. Live orders must remain disabled until Silveram publishes approved policy details and a support contact.
           </div>
           <p>
-            Checkout uses email verification and, once configured, stores customer and delivery details with Appwrite to process orders. Online payments are processed by Razorpay. Cart contents are also saved in this browser.
+            Checkout uses email verification. When enabled, customer and delivery details are sent to the Silveram server and stored in its MongoDB database to process orders. Online payments are processed by Razorpay. Cart contents are also saved in this browser.
           </p>
           <p>
             Before launch, replace this notice with the store's actual privacy, payment, shipping, cancellation, returns, and refund terms, including applicable retention periods and customer-support details.

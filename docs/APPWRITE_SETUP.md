@@ -16,6 +16,18 @@ The configured project uses endpoint `https://sgp.cloud.appwrite.io/v1` and proj
 
 The project is on Appwrite's free plan. Free-plan limits, service availability, backups, and feature availability can change; confirm them in the Console. The current plan does not provide a production SLA or automatic backups.
 
+## Current Console state
+
+Verified in the connected Appwrite project during this setup:
+
+- The `silveram-store` database and `products`/`orders` tables exist. All expected custom columns are `Available`.
+- Row-level security is enabled on both tables, and neither table has broad table-level permissions.
+- Product indexes `sku_unique` and `active_category`, and order index `user_created`, are available.
+- The `product-images` bucket exists. File-level security is enabled, bucket-level permissions are empty, encryption and image transformations are enabled, metadata stripping is enabled, the size limit is 5 MB, and only WebP uploads are allowed. The free plan currently permits only one storage bucket, now used for product images.
+- The bucket has no files yet; no product or order rows have been provisioned. The Function is not deployed/configured, and checkout remains disabled.
+
+The provisioner remains the repeatable source of truth for schema/index checks and starter asset/row upload. No production customer data or live payment credentials have been added.
+
 ## Project layout
 
 | Path | Responsibility |
@@ -46,7 +58,7 @@ Column keys are case-sensitive. The Function and provisioning script expect thes
 
 | Column | Type | Required | Notes |
 |---|---|---:|---|
-| `sku` | varchar(64) | yes | Unique store SKU; add a uniqueness index before live catalog management |
+| `sku` | varchar(64) | yes | Unique store SKU; enforced by the `sku_unique` index |
 | `name` | varchar(160) | yes | Customer-facing name |
 | `description` | text | yes | Verified product details; do not use placeholder copy for live products |
 | `category` | varchar(32) | yes | `ring`, `necklace`, `earring`, or `bracelet` |
@@ -74,9 +86,11 @@ Column keys are case-sensitive. The Function and provisioning script expect thes
 
 The function's order ID is the checkout idempotency key (at most 36 characters). Keep customer PII in the private `orders` table; never put it in product data, public logs, or the image bucket.
 
+The provisioner creates three indexes: unique `products.sku`, composite `products.active` + `products.category`, and composite `orders.userId` + `orders.createdAt` (descending creation time). Add an index before introducing a corresponding high-volume filter or sort.
+
 ## Provisioning the database
 
-The source-controlled script creates/checks the database, private tables, columns, image bucket, uploads existing WebP assets, and inserts starter product rows with `active: false` and `stockQuantity: 0`. It never overwrites existing catalog rows.
+The source-controlled script creates/checks the database, private tables, columns, indexes, image bucket, uploads existing WebP assets, and inserts starter product rows with `active: false` and `stockQuantity: 0`. It never overwrites existing catalog rows.
 
 1. In Appwrite **API Keys**, create a short-lived provisioning key with only `databases.read`, `databases.write`, `storage.read`, and `storage.write`.
 2. From the repository root, run `.\functions\storefront\scripts\provision-appwrite.ps1` and enter the key at the hidden prompt. Do not paste the key in chat, a command argument, `.env`, or source control.
@@ -103,16 +117,30 @@ const client = new Client()
 const tables = new TablesDB(client);
 const databaseId = 'silveram-store';
 const tableId = 'products';
+const productData = {
+  sku: 'SKU-NEW-001',
+  name: 'Verified product name',
+  description: 'Verified product details and materials.',
+  category: 'ring',
+  priceInPaise: 100000,
+  currency: 'INR',
+  stockQuantity: 0,
+  active: false,
+  imageFileId: 'uploaded-webp-file-id',
+};
 
 // Create; the key must be server-side. Public permission is read-only.
 await tables.createRow(databaseId, tableId, 'your-stable-product-id', productData, [
   Permission.read(Role.any()),
 ]);
 
-// Read/update/delete by row ID from a trusted server script:
+// Read the catalog or one product, then update it from a trusted server script:
+const catalog = await tables.listRows(databaseId, tableId);
 const product = await tables.getRow(databaseId, tableId, 'your-stable-product-id');
 await tables.updateRow(databaseId, tableId, product.$id, { active: false });
+
 // Only delete when no historical order/report needs the catalog row.
+await tables.deleteRow(databaseId, tableId, product.$id);
 ```
 
 Never use an API key in `VITE_*` variables, frontend code, browser storage, or a designer's client-side tool. Do not let a bulk update accidentally set `active: true` or positive stock on sample data. Test one row in a non-live environment first.
@@ -159,7 +187,7 @@ Set image readiness true only after confirming the product image bucket and file
 
 - Use a staging Appwrite project and Razorpay test credentials to test sign-up, returning-user OTP, invalid/expired code, rate limits, COD, cancellation, duplicate submit, failed/captured payment, and browser-close recovery.
 - Implement atomic stock reservation/decrement with expiry, payment-failure cleanup, and retry protection. Current stock checking alone can oversell under concurrent requests.
-- Add and validate required database indexes, including unique `sku`; plan indexes for order lookups by user/date and payment provider IDs.
+- The provisioner creates a unique `sku` index, a product `active`/`category` index, and a composite order `userId`/`createdAt` index. Add indexes for future query patterns before deploying those queries, and monitor index status after migrations.
 - Add payment webhooks and periodic reconciliation so browser-close/payment callback failures cannot strand paid orders.
 - Configure real products, images, actual stock, shipping/tax rules, GST/invoice handling, delivery scope, returns/refunds, cancellation, COD policy, and approved privacy/terms copy.
 - Add confirmation emails, staff order fulfillment, tracking, monitoring/alerts, API-key rotation, and a tested backup/export/restore plan.

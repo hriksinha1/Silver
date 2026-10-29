@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ID } from 'appwrite';
-import { account, callStoreFunction, isCheckoutEnabled } from '@/shared/lib/appwrite';
+import { apiRequest, isCheckoutEnabled } from '@/shared/lib/api';
 import { formatINR } from '@/shared/lib/money';
 import { CloseIcon } from '@/shared/ui/icons';
 import Button from '@/shared/ui/Button';
@@ -82,7 +81,6 @@ export default function CheckoutDialog({
   const [step, setStep] = useState<CheckoutStep>('email');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
-  const [userId, setUserId] = useState('');
   const [code, setCode] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -96,7 +94,7 @@ export default function CheckoutDialog({
   const [placedOrder, setPlacedOrder] = useState<OrderResponse | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const requestIdRef = useRef(ID.unique());
+  const requestIdRef = useRef(crypto.randomUUID());
   const busyRef = useRef(busy);
   const onCloseRef = useRef(onClose);
   busyRef.current = busy;
@@ -156,12 +154,11 @@ export default function CheckoutDialog({
     setBusy(true);
     setError('');
     try {
-      const result = await callStoreFunction<{ userId: string }>('/auth/start', {
-        email: normalizedEmail,
+      await apiRequest<{ success: boolean }>('/auth/otp', {
+        method: 'POST',
+        body: JSON.stringify({ email: normalizedEmail }),
       });
-      if (!result.userId) throw new Error('Unable to start email verification.');
       setEmail(normalizedEmail);
-      setUserId(result.userId);
       setStep('code');
       setResendSeconds(resend ? 60 : 30);
     } catch (reason) {
@@ -181,7 +178,10 @@ export default function CheckoutDialog({
     setBusy(true);
     setError('');
     try {
-      await account.createSession(userId, code);
+      await apiRequest('/auth/verify', {
+        method: 'POST',
+        body: JSON.stringify({ email, code, name: fullName.trim() }),
+      });
       setStep('shipping');
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'That code could not be verified.');
@@ -208,11 +208,12 @@ export default function CheckoutDialog({
     setBusy(true);
     setError('');
     try {
-      const order = await callStoreFunction<OrderResponse>(
+      const order = await apiRequest<OrderResponse>(
         '/orders',
         {
+          method: 'POST',
+          body: JSON.stringify({
           requestId: requestIdRef.current,
-          email,
           paymentMethod,
           customer: {
             name: fullName.trim(),
@@ -224,8 +225,8 @@ export default function CheckoutDialog({
             country: 'IN',
           },
           items: cart.map(({ id, quantity }) => ({ id, quantity })),
-        },
-        true
+          }),
+        }
       );
 
       if (paymentMethod === 'cod') {
@@ -254,10 +255,10 @@ export default function CheckoutDialog({
         handler: async (payment) => {
           setBusy(true);
           try {
-            await callStoreFunction('/orders/verify', {
-              requestId: requestIdRef.current,
-              ...payment,
-            }, true);
+            await apiRequest(`/orders/${encodeURIComponent(requestIdRef.current)}/verify`, {
+              method: 'POST',
+              body: JSON.stringify(payment),
+            });
             setPlacedOrder(order);
             setStep('complete');
             onOrderComplete();
@@ -285,7 +286,6 @@ export default function CheckoutDialog({
       setStep('email');
       setEmail('');
       setFullName('');
-      setUserId('');
       setCode('');
       setPhone('');
       setAddress('');
@@ -355,8 +355,8 @@ export default function CheckoutDialog({
 
           {!isCheckoutEnabled ? (
             <p className="rounded-[2px] border border-[#E2DEE5] bg-[#FAF8FB] px-4 py-3 text-sm leading-relaxed text-[#4E4852]" role="status">
-              Secure checkout is being prepared. Please contact the store while Appwrite,
-              payment, delivery, and policy settings are completed.
+              Secure checkout is being prepared. Please contact the store while the database,
+              email, payment, delivery, and policy settings are completed.
             </p>
           ) : (
             <>
