@@ -6,6 +6,13 @@ const functionId = import.meta.env.VITE_APPWRITE_STORE_FUNCTION_ID;
 
 export const isAppwriteConfigured = Boolean(endpoint && projectId && functionId);
 export const isCheckoutEnabled = import.meta.env.VITE_CHECKOUT_ENABLED === 'true';
+const isProductImageStorageReady =
+  import.meta.env.VITE_APPWRITE_PRODUCT_IMAGES_READY === 'true';
+
+export function getProductImageUrl(fileId: string, fallback: string): string {
+  if (!isProductImageStorageReady || !endpoint || !projectId) return fallback;
+  return `${endpoint.replace(/\/$/, '')}/storage/buckets/product-images/files/${encodeURIComponent(fileId)}/view?project=${encodeURIComponent(projectId)}`;
+}
 
 const client = new Client();
 

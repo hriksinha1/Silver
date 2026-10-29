@@ -59,6 +59,7 @@ export interface ProductItem {
   name: string;
   price: number;
   image: string;
+  imageFileId: string;
   type: 'ring' | 'necklace' | 'earring' | 'bracelet';
 }
 
@@ -68,6 +69,7 @@ export const PRODUCTS: ProductItem[] = [
     name: 'Celeste Diamond Ring',
     price: 24900,
     image: IMAGES.productRing.src,
+    imageFileId: 'product-ring',
     type: 'ring',
   },
   {
@@ -75,6 +77,7 @@ export const PRODUCTS: ProductItem[] = [
     name: 'Minimal Diamond Necklace',
     price: 19900,
     image: IMAGES.productNecklace.src,
+    imageFileId: 'product-necklace',
     type: 'necklace',
   },
   {
@@ -82,6 +85,7 @@ export const PRODUCTS: ProductItem[] = [
     name: 'Floral Pattern Earring',
     price: 14900,
     image: IMAGES.productEarring.src,
+    imageFileId: 'product-earring',
     type: 'earring',
   },
   {
@@ -89,6 +93,7 @@ export const PRODUCTS: ProductItem[] = [
     name: 'Solis Charm Bracelet',
     price: 18900,
     image: IMAGES.productBracelet.src,
+    imageFileId: 'product-bracelet',
     type: 'bracelet',
   },
   {
@@ -96,6 +101,7 @@ export const PRODUCTS: ProductItem[] = [
     name: 'Gold Statement Ring',
     price: 29900,
     image: IMAGES.heroRingBox.src,
+    imageFileId: 'product-gold-statement-ring',
     type: 'ring',
   },
 ];

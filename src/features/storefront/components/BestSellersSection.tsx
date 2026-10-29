@@ -4,6 +4,7 @@ import { PlusIcon } from '@/shared/ui/icons';
 import { useCart } from '@/features/cart/context/CartContext';
 import { PRODUCTS } from '@/features/storefront/data/catalog';
 import { formatINR } from '@/shared/lib/money';
+import { getProductImageUrl } from '@/shared/lib/appwrite';
 
 export function BestSellersSection() {
   const { addToCart, highlightedProductId } = useCart();
@@ -55,7 +56,7 @@ export function BestSellersSection() {
                 {/* Full-bleed square photo */}
                 <div className="relative aspect-square w-full overflow-hidden bg-[#E2DEE5]">
                   <SafeImage
-                    src={prod.image}
+                    src={getProductImageUrl(prod.imageFileId, prod.image)}
                     alt={prod.name}
                     width={386}
                     height={386}
@@ -81,7 +82,7 @@ export function BestSellersSection() {
                           id: prod.id,
                           name: prod.name,
                           price: prod.price,
-                          image: prod.image,
+                          image: getProductImageUrl(prod.imageFileId, prod.image),
                         })
                       }
                       className="flex h-8 w-8 min-w-[32px] min-h-[32px] items-center justify-center rounded-[2px] bg-[#69388F] text-white transition-colors hover:bg-[#7B43A6] active:bg-[#572E77]"

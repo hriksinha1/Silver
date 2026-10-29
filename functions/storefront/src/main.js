@@ -10,22 +10,22 @@ import {
   Users,
 } from 'node-appwrite';
 
-const catalog = {
-  'product-celeste-diamond-ring': { name: 'Celeste Diamond Ring', priceInRupees: 24900 },
-  'product-minimal-diamond-necklace': { name: 'Minimal Diamond Necklace', priceInRupees: 19900 },
-  'product-floral-pattern-earring': { name: 'Floral Pattern Earring', priceInRupees: 14900 },
-  'product-solis-charm-bracelet': { name: 'Solis Charm Bracelet', priceInRupees: 18900 },
-  'gold-statement-ring': { name: 'Gold Statement Ring', priceInRupees: 29900 },
-};
-
 const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
 const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
 const databaseId = process.env.APPWRITE_DATABASE_ID;
 const ordersCollectionId = process.env.APPWRITE_ORDERS_COLLECTION_ID;
+const productsCollectionId = process.env.APPWRITE_PRODUCTS_COLLECTION_ID;
 
 function getAdminClient() {
-  if (!endpoint || !projectId || !apiKey || !databaseId || !ordersCollectionId) {
+  if (
+    !endpoint ||
+    !projectId ||
+    !apiKey ||
+    !databaseId ||
+    !ordersCollectionId ||
+    !productsCollectionId
+  ) {
     throw new Error('The Appwrite function is missing required environment configuration.');
   }
   return new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
@@ -106,12 +106,12 @@ async function authenticatedUser(req) {
   return new Account(client).get();
 }
 
-function getOrderItems(input) {
+async function getOrderItems(input, databases) {
   if (!Array.isArray(input) || input.length === 0 || input.length > 20) {
     throw new Error('Your bag is empty or contains too many different items.');
   }
   const seen = new Set();
-  return input.map((item) => {
+  const requestedItems = input.map((item) => {
     if (
       !item ||
       typeof item.id !== 'string' ||
@@ -123,15 +123,38 @@ function getOrderItems(input) {
       throw new Error('One or more items in your bag are invalid. Please review your bag.');
     }
     seen.add(item.id);
-    const product = Object.hasOwn(catalog, item.id) ? catalog[item.id] : undefined;
-    if (!product) throw new Error('An item in your bag is no longer available.');
-    const unitPriceInPaise = product.priceInRupees * 100;
+    return item;
+  });
+
+  const products = await Promise.all(
+    requestedItems.map(async ({ id, quantity }) => {
+      try {
+        return { product: await databases.getDocument(databaseId, productsCollectionId, id), quantity };
+      } catch (error) {
+        if (error?.code === 404) {
+          throw new Error('An item in your bag is no longer available.');
+        }
+        throw error;
+      }
+    })
+  );
+
+  return products.map(({ product, quantity }) => {
+    if (
+      product.active !== true ||
+      !Number.isSafeInteger(product.priceInPaise) ||
+      product.priceInPaise < 1 ||
+      !Number.isInteger(product.stockQuantity) ||
+      product.stockQuantity < quantity
+    ) {
+      throw new Error('An item in your bag is currently unavailable. Please contact the store.');
+    }
     return {
-      id: item.id,
+      id: product.$id,
       name: product.name,
-      quantity: item.quantity,
-      unitPriceInPaise,
-      lineTotalInPaise: unitPriceInPaise * item.quantity,
+      quantity,
+      unitPriceInPaise: product.priceInPaise,
+      lineTotalInPaise: product.priceInPaise * quantity,
     };
   });
 }
@@ -221,17 +244,25 @@ async function createOrder(body, res, log, user) {
     return jsonError(res, 400, 'Choose a supported payment method.');
   }
 
+  const databases = new Databases(getAdminClient());
   let items;
   let shipping;
   try {
-    items = getOrderItems(body.items);
+    items = await getOrderItems(body.items, databases);
     shipping = validateCustomer(body.customer);
   } catch (error) {
+    if (
+      error?.code &&
+      error.code !== 404 &&
+      error.message !== 'An item in your bag is no longer available.'
+    ) {
+      log(`Product lookup failed (${error.code}).`);
+      return jsonError(res, 503, 'We could not verify product availability. Please try again.');
+    }
     return jsonError(res, 400, error.message);
   }
 
   const amountInPaise = items.reduce((total, item) => total + item.lineTotalInPaise, 0);
-  const databases = new Databases(getAdminClient());
   let existing;
 
   try {

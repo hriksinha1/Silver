@@ -1,12 +1,16 @@
-import { Client, Databases } from 'node-appwrite';
+import { Client, Databases, ID, Permission, Role, Storage } from 'node-appwrite';
+import { InputFile } from 'node-appwrite/file';
+import { fileURLToPath } from 'node:url';
 
 const endpoint = process.env.APPWRITE_ENDPOINT;
 const projectId = process.env.APPWRITE_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
 const databaseId = 'silveram-store';
-const collectionId = 'orders';
+const ordersCollectionId = 'orders';
+const productsCollectionId = 'products';
+const productImagesBucketId = 'product-images';
 
-const attributes = [
+const orderAttributes = [
   { key: 'userId', type: 'string', size: 36 },
   { key: 'email', type: 'string', size: 254 },
   { key: 'status', type: 'string', size: 32 },
@@ -18,6 +22,66 @@ const attributes = [
   { key: 'razorpayOrderId', type: 'string', size: 100 },
   { key: 'razorpayPaymentId', type: 'string', size: 100 },
   { key: 'createdAt', type: 'datetime' },
+];
+
+const productAttributes = [
+  { key: 'sku', type: 'string', size: 64 },
+  { key: 'name', type: 'string', size: 160 },
+  { key: 'description', type: 'string', size: 2000 },
+  { key: 'category', type: 'string', size: 32 },
+  { key: 'priceInPaise', type: 'integer' },
+  { key: 'currency', type: 'string', size: 3 },
+  { key: 'stockQuantity', type: 'integer' },
+  { key: 'active', type: 'boolean' },
+  { key: 'imageFileId', type: 'string', size: 36 },
+];
+
+const starterProducts = [
+  {
+    id: 'product-celeste-diamond-ring',
+    sku: 'SR-001',
+    name: 'Celeste Diamond Ring',
+    category: 'ring',
+    priceInPaise: 2490000,
+    imageFileId: 'product-ring',
+    imageName: 'product-ring.webp',
+  },
+  {
+    id: 'product-minimal-diamond-necklace',
+    sku: 'SN-001',
+    name: 'Minimal Diamond Necklace',
+    category: 'necklace',
+    priceInPaise: 1990000,
+    imageFileId: 'product-necklace',
+    imageName: 'product-necklace.webp',
+  },
+  {
+    id: 'product-floral-pattern-earring',
+    sku: 'SE-001',
+    name: 'Floral Pattern Earring',
+    category: 'earring',
+    priceInPaise: 1490000,
+    imageFileId: 'product-earring',
+    imageName: 'product-earring.webp',
+  },
+  {
+    id: 'product-solis-charm-bracelet',
+    sku: 'SB-001',
+    name: 'Solis Charm Bracelet',
+    category: 'bracelet',
+    priceInPaise: 1890000,
+    imageFileId: 'product-bracelet',
+    imageName: 'product-bracelet.webp',
+  },
+  {
+    id: 'gold-statement-ring',
+    sku: 'SR-002',
+    name: 'Gold Statement Ring',
+    category: 'ring',
+    priceInPaise: 2990000,
+    imageFileId: 'product-gold-statement-ring',
+    imageName: 'hero-ring-box.webp',
+  },
 ];
 
 function assertEnvironment() {
@@ -41,12 +105,12 @@ async function ensureDatabase(databases) {
   }
 }
 
-async function ensureCollection(databases) {
+async function ensureCollection(databases, collectionId, name) {
   try {
     const collection = await databases.getCollection(databaseId, collectionId);
     if (!collection.documentSecurity || collection.permissions.length > 0) {
       throw new Error(
-        'The existing orders collection must have document security enabled and no collection-level permissions.'
+        `The existing ${collectionId} collection must have document security enabled and no collection-level permissions.`
       );
     }
   } catch (error) {
@@ -54,7 +118,7 @@ async function ensureCollection(databases) {
     await databases.createCollection(
       databaseId,
       collectionId,
-      'Orders',
+      name,
       [],
       true,
       true
@@ -63,7 +127,7 @@ async function ensureCollection(databases) {
   }
 }
 
-async function ensureAttributes(databases) {
+async function ensureAttributes(databases, collectionId, attributes) {
   const existing = await databases.listAttributes(databaseId, collectionId);
   const existingByKey = new Map(existing.attributes.map((attribute) => [attribute.key, attribute]));
 
@@ -97,6 +161,13 @@ async function ensureAttributes(databases) {
         0,
         2147483647
       );
+    } else if (definition.type === 'boolean') {
+      await databases.createBooleanAttribute(
+        databaseId,
+        collectionId,
+        definition.key,
+        true
+      );
     } else {
       await databases.createDatetimeAttribute(databaseId, collectionId, definition.key, true);
     }
@@ -118,18 +189,101 @@ async function ensureAttributes(databases) {
   throw new Error('Timed out waiting for Appwrite to finish creating order attributes.');
 }
 
+async function ensureProductImagesBucket(storage) {
+  try {
+    const bucket = await storage.getBucket(productImagesBucketId);
+    if (!bucket.fileSecurity || bucket.permissions.length > 0) {
+      throw new Error(
+        'The existing product image bucket must have file security enabled and no bucket-level permissions.'
+      );
+    }
+  } catch (error) {
+    if (error.code !== 404) throw error;
+    await storage.createBucket(
+      productImagesBucketId,
+      'Silveram Product Images',
+      [],
+      true,
+      true,
+      5 * 1024 * 1024,
+      ['webp'],
+      undefined,
+      true,
+      false
+    );
+    console.log(`Created private product image bucket: ${productImagesBucketId}`);
+  }
+}
+
+async function uploadProductImage(storage, product) {
+  try {
+    await storage.getFile(productImagesBucketId, product.imageFileId);
+    return;
+  } catch (error) {
+    if (error.code !== 404) throw error;
+  }
+
+  const imagePath = fileURLToPath(
+    new URL(`../../../public/images/${product.imageName}`, import.meta.url)
+  );
+  await storage.createFile(
+    productImagesBucketId,
+    product.imageFileId,
+    InputFile.fromPath(imagePath, product.imageName),
+    [Permission.read(Role.any())]
+  );
+  console.log(`Uploaded ${product.imageName}`);
+}
+
+async function ensureStarterProducts(databases, storage) {
+  for (const product of starterProducts) {
+    await uploadProductImage(storage, product);
+    try {
+      await databases.getDocument(databaseId, productsCollectionId, product.id);
+    } catch (error) {
+      if (error.code !== 404) throw error;
+      await databases.createDocument(
+        databaseId,
+        productsCollectionId,
+        product.id,
+        {
+          sku: product.sku,
+          name: product.name,
+          description: 'Replace with verified materials, dimensions, and care details.',
+          category: product.category,
+          priceInPaise: product.priceInPaise,
+          currency: 'INR',
+          stockQuantity: 0,
+          active: false,
+          imageFileId: product.imageFileId,
+        },
+        [Permission.read(Role.any())]
+      );
+      console.log(`Created inactive starter product: ${product.id}`);
+    }
+  }
+}
+
 async function main() {
   assertEnvironment();
   const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
   const databases = new Databases(client);
+  const storage = new Storage(client);
 
   await ensureDatabase(databases);
-  await ensureCollection(databases);
-  await ensureAttributes(databases);
+  await ensureCollection(databases, ordersCollectionId, 'Orders');
+  await ensureCollection(databases, productsCollectionId, 'Products');
+  await ensureAttributes(databases, ordersCollectionId, orderAttributes);
+  await ensureAttributes(databases, productsCollectionId, productAttributes);
+  await ensureProductImagesBucket(storage);
+  await ensureStarterProducts(databases, storage);
 
   console.log(`Database ID: ${databaseId}`);
-  console.log(`Orders collection ID: ${collectionId}`);
-  console.log('No collection-level client permissions were added.');
+  console.log(`Orders collection ID: ${ordersCollectionId}`);
+  console.log(`Products collection ID: ${productsCollectionId}`);
+  console.log(`Product image bucket ID: ${productImagesBucketId}`);
+  console.log('Starter products are inactive with zero stock; no live orders can use them.');
+  console.log('Collections and bucket have no broad permissions; product documents/images are individually public-read.');
 }
 
 main().catch((error) => {
