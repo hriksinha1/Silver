@@ -114,7 +114,7 @@ function getOrderItems(input) {
       throw new Error('One or more items in your bag are invalid. Please review your bag.');
     }
     seen.add(item.id);
-    const product = catalog[item.id];
+    const product = Object.hasOwn(catalog, item.id) ? catalog[item.id] : undefined;
     if (!product) throw new Error('An item in your bag is no longer available.');
     const unitPriceInPaise = product.priceInRupees * 100;
     return {
@@ -201,7 +201,10 @@ async function createOrder(body, res, log, user) {
   if (!validString(body.requestId, 36) || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/.test(body.requestId)) {
     return jsonError(res, 400, 'Invalid order request. Please refresh checkout and try again.');
   }
-  if (typeof body.email !== 'string' || body.email.trim().toLowerCase() !== user.email) {
+  if (
+    typeof body.email !== 'string' ||
+    body.email.trim().toLowerCase() !== user.email?.toLowerCase()
+  ) {
     return jsonError(res, 400, 'The verified email does not match your checkout email.');
   }
   if (!['razorpay', 'cod'].includes(body.paymentMethod)) {

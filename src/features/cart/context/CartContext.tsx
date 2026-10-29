@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { PRODUCTS } from '@/features/storefront/data/catalog';
 
 const MAX_ITEM_QUANTITY = 10;
 
@@ -38,18 +39,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (!saved) return [];
       const parsed: unknown = JSON.parse(saved);
       if (!Array.isArray(parsed)) return [];
-      return parsed.filter((item): item is CartItem =>
-        Boolean(
-          item &&
-          typeof item.id === 'string' &&
-          typeof item.name === 'string' &&
-          Number.isFinite(item.price) &&
-          item.price > 0 &&
-          Number.isInteger(item.quantity) &&
-          item.quantity > 0 &&
-          item.quantity <= MAX_ITEM_QUANTITY
-        )
-      );
+      return parsed.flatMap((item: unknown) => {
+        if (
+          !item ||
+          typeof item !== 'object' ||
+          !('id' in item) ||
+          typeof item.id !== 'string' ||
+          !('quantity' in item) ||
+          typeof item.quantity !== 'number' ||
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1 ||
+          item.quantity > MAX_ITEM_QUANTITY
+        ) {
+          return [];
+        }
+        const product = PRODUCTS.find(({ id }) => id === item.id);
+        return product ? [{ ...product, quantity: item.quantity }] : [];
+      });
     } catch {
       return [];
     }
