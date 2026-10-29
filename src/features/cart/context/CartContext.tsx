@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PRODUCTS } from '@/features/storefront/data/catalog';
+import { getProductImageUrl } from '@/shared/lib/appwrite';
 
 const MAX_ITEM_QUANTITY = 10;
 
@@ -54,7 +55,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           return [];
         }
         const product = PRODUCTS.find(({ id }) => id === item.id);
-        return product ? [{ ...product, quantity: item.quantity }] : [];
+        return product
+          ? [{
+              ...product,
+              image: getProductImageUrl(product.imageFileId, product.image),
+              quantity: item.quantity,
+            }]
+          : [];
       });
     } catch {
       return [];

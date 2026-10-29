@@ -5,6 +5,7 @@ import Button from '@/shared/ui/Button';
 import SafeImage from '@/shared/ui/SafeImage';
 import { IMAGES } from '@/shared/data/images';
 import { useCart } from '@/features/cart/context/CartContext';
+import { getProductImageUrl } from '@/shared/lib/appwrite';
 
 interface HeroSectionProps {
   cartTriggerRef: React.RefObject<HTMLButtonElement | null>;
@@ -45,7 +46,7 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
         id: 'gold-statement-ring',
         name: 'Gold Statement Ring',
         price: 29900,
-        image: IMAGES.heroRingBox.src,
+        image: getProductImageUrl('product-gold-statement-ring', IMAGES.heroRingBox.src),
         subtitle: 'Luxury Edition handcrafted 18k gold band',
       },
       true

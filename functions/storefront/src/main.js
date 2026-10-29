@@ -263,6 +263,9 @@ async function createOrder(body, res, log, user) {
   }
 
   const amountInPaise = items.reduce((total, item) => total + item.lineTotalInPaise, 0);
+  if (!Number.isSafeInteger(amountInPaise) || amountInPaise > 2147483647) {
+    return jsonError(res, 400, 'The order total is above the supported checkout limit.');
+  }
   let existing;
 
   try {

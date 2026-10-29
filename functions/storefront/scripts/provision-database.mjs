@@ -130,6 +130,15 @@ async function ensureCollection(databases, collectionId, name) {
 async function ensureAttributes(databases, collectionId, attributes) {
   const existing = await databases.listAttributes(databaseId, collectionId);
   const existingByKey = new Map(existing.attributes.map((attribute) => [attribute.key, attribute]));
+  const expectedKeys = new Set(attributes.map(({ key }) => key));
+  const unexpectedRequired = existing.attributes.find(
+    (attribute) => attribute.required && !expectedKeys.has(attribute.key)
+  );
+  if (unexpectedRequired) {
+    throw new Error(
+      `Unexpected required attribute "${unexpectedRequired.key}" in ${collectionId}; the Function does not provide it.`
+    );
+  }
 
   for (const definition of attributes) {
     const current = existingByKey.get(definition.key);
@@ -192,9 +201,16 @@ async function ensureAttributes(databases, collectionId, attributes) {
 async function ensureProductImagesBucket(storage) {
   try {
     const bucket = await storage.getBucket(productImagesBucketId);
-    if (!bucket.fileSecurity || bucket.permissions.length > 0) {
+    if (
+      !bucket.fileSecurity ||
+      bucket.permissions.length > 0 ||
+      !bucket.encryption ||
+      bucket.maximumFileSize > 5 * 1024 * 1024 ||
+      bucket.allowedFileExtensions.length !== 1 ||
+      bucket.allowedFileExtensions[0] !== 'webp'
+    ) {
       throw new Error(
-        'The existing product image bucket must have file security enabled and no bucket-level permissions.'
+        'The existing image bucket must be private-by-default, encrypted, limited to WebP files up to 5 MB, and have no bucket-level permissions.'
       );
     }
   } catch (error) {
@@ -217,7 +233,16 @@ async function ensureProductImagesBucket(storage) {
 
 async function uploadProductImage(storage, product) {
   try {
-    await storage.getFile(productImagesBucketId, product.imageFileId);
+    const file = await storage.getFile(productImagesBucketId, product.imageFileId);
+    const expectedReadPermission = Permission.read(Role.any());
+    if (
+      file.$permissions.length !== 1 ||
+      file.$permissions[0] !== expectedReadPermission
+    ) {
+      throw new Error(
+        `Existing product image "${product.imageFileId}" must have public-read-only permissions.`
+      );
+    }
     return;
   } catch (error) {
     if (error.code !== 404) throw error;
@@ -239,7 +264,16 @@ async function ensureStarterProducts(databases, storage) {
   for (const product of starterProducts) {
     await uploadProductImage(storage, product);
     try {
-      await databases.getDocument(databaseId, productsCollectionId, product.id);
+      const document = await databases.getDocument(databaseId, productsCollectionId, product.id);
+      const expectedReadPermission = Permission.read(Role.any());
+      if (
+        document.$permissions.length !== 1 ||
+        document.$permissions[0] !== expectedReadPermission
+      ) {
+        throw new Error(
+          `Existing product "${product.id}" must have public-read-only permissions.`
+        );
+      }
     } catch (error) {
       if (error.code !== 404) throw error;
       await databases.createDocument(

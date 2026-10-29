@@ -97,7 +97,7 @@ Cash on delivery is available without Razorpay credentials. It does not collect 
 Copy `.env.example` to `.env.local` and set:
 
 ```env
-VITE_APPWRITE_ENDPOINT=https://<your-region>.cloud.appwrite.io/v1
+VITE_APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1
 VITE_APPWRITE_PROJECT_ID=6ae2df98002eb5a1a39b
 VITE_APPWRITE_STORE_FUNCTION_ID=<deployed-function-id>
 VITE_APPWRITE_PRODUCT_IMAGES_READY=false
@@ -108,7 +108,7 @@ The endpoint and project ID are public identifiers; API keys and payment secrets
 
 ## 6. Before accepting real orders
 
-- Replace the sample catalog entries and photos with the real products; edit product names, descriptions, prices, stock, and active status in Appwrite. Verify all amounts are INR and GST treatment is settled.
+- Replace the sample catalog entries and photos with real products. Keep the storefront cards in `src/features/storefront/data/catalog.ts` synchronized with Appwrite product records; the Function uses Appwrite as the authoritative price, active-status, and stock source. Verify all amounts are INR and GST treatment is settled.
 - Implement atomic stock reservation/decrement and reservation expiry. The current Function checks stock but does not reserve or decrement it, so simultaneous orders can oversell. Do not enable live checkout until this is addressed.
 - Confirm GST treatment, invoices, shipping charges/eligibility, delivery coverage, COD availability, cancellation/return/refund rules, and the legal/privacy text for the actual business. The current storefront content is not legal advice or a substitute for approved policies.
 - Add a real order confirmation email, fulfillment/admin workflow, shipping tracking, and operational monitoring. The current UI only displays the order reference; it does not send an order confirmation email.
