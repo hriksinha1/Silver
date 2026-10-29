@@ -187,3 +187,35 @@ Code: `server/src/storage/cloudinary/folders.js` (paths), `client.js` (signing, 
 4. The API rejects any `publicId` outside `products/<sku>/` of the current environment, and returns optimised delivery URLs (`f_auto,q_auto,c_limit,w_1200`) on every product as `images[].url` / `imageUrl`.
 
 Setup: fill `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` in `server/.env` (all or none; set them in the deployment secret manager for production). Legacy `/images/*.webp` entries keep working until migrated.
+
+## Database guide for developers and designers
+
+**One file describes the whole database: [`server/src/database/schema.js`](../server/src/database/schema.js).** Each collection lists its purpose, allowed fields (validator) and indexes.
+
+| Collection | Holds | Typical CRUD |
+|---|---|---|
+| `users` | verified email, name, phone | created on first login; edit name/phone |
+| `authChallenges`, `sessions`, `rateLimits` | login codes (hashed), sessions (hashed), throttles | automatic; expire themselves |
+| `products` | catalog, price (paise), stock, Cloudinary `images[]` | `/api/products/admin` POST/GET/PATCH/DELETE (delete = `active:false`) |
+| `orders` | items, shipping phone/address, `razorpayOrderId`, `razorpayPaymentId` (transaction ID) | created at checkout; staff via `/api/admin/orders` |
+| `webhookEvents` | processed Razorpay event IDs | automatic |
+
+Commands (run in `server/`):
+
+| Command | What it does |
+|---|---|
+| `npm run db:setup` | creates collections, validators, indexes from `schema.js` (idempotent) |
+| `npm run db:check` | read-only audit: TLS, structure, stock/reservation integrity, placeholder products |
+| `npm run seed:catalog` | adds inactive sample products |
+| `npm run dev` / `npm test` | run API / tests |
+
+Change the structure: edit `schema.js` → `npm run db:setup`. Validation is "moderate": new writes must match, old documents are untouched.
+
+### Security model
+- Browser never touches MongoDB; only the API does. Runtime user `silveram_app` is `readWrite` on one database, so it **cannot** set validators. Run `npm run db:setup` once with `MONGODB_SETUP_URI` set to a temporary Atlas user that has `dbAdmin` on `silveram`, then delete that user.
+- Login: emailed 6-digit code (peppered hash, max attempts, resend delay, rate limits); sessions are opaque tokens stored only as SHA-256 hashes in HttpOnly cookies; admin = `ADMIN_EMAILS` allowlist.
+- Payments: Razorpay signatures and webhooks verified server-side; prices/stock come from the DB, never the browser; stock reserved in a transaction; checkout is idempotent by request ID.
+- Secrets only in `server/.env` (Git-ignored) / host secret manager.
+
+### Scalability
+Pooled connections (max 10), every query path indexed, TTL indexes clean up expired data, API is stateless (horizontally scalable / serverless). Free Atlas M0 has no backups: before real orders upgrade to a paid tier (M10+) with continuous backup, set Atlas IP access to the API's egress IPs, and enable alerts.

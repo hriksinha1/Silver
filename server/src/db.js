@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import { SCHEMA } from './database/schema.js';
 
 let client;
 let database;
@@ -21,25 +22,13 @@ export async function connectDatabase(config) {
   return { client, database };
 }
 
+// Indexes are declared in database/schema.js. Validators are applied by `npm run db:setup`.
 async function ensureIndexes(db) {
-  await Promise.all([
-    db.collection('users').createIndex({ email: 1 }, { unique: true }),
-    db.collection('authChallenges').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
-    db.collection('sessions').createIndex({ tokenHash: 1 }, { unique: true }),
-    db.collection('sessions').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
-    db.collection('rateLimits').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 }),
-    db.collection('products').createIndex({ sku: 1 }, { unique: true }),
-    db.collection('products').createIndex({ active: 1, category: 1, _id: 1 }),
-    db.collection('orders').createIndex({ userId: 1, createdAt: -1 }),
-    db.collection(
-      'orders',
-    ).createIndex({ razorpayOrderId: 1 }, { unique: true, sparse: true }),
-    db.collection('orders').createIndex(
-      { reservationExpiresAt: 1 },
-      { partialFilterExpression: { status: 'pending_payment' } },
+  await Promise.all(
+    Object.entries(SCHEMA).flatMap(([name, def]) =>
+      def.indexes.map(({ key, options }) => db.collection(name).createIndex(key, options)),
     ),
-    db.collection('webhookEvents').createIndex({ receivedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 }),
-  ]);
+  );
 }
 
 export function collections() {

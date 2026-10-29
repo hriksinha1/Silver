@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import { Router } from 'express';
 import { z } from 'zod';
 import { collections } from '../db.js';
+import { PRODUCT_CATEGORIES } from '../database/schema.js';
 import { requireAdmin, requireUser } from '../middleware.js';
 import { cloudinaryEnabled, imageUrl as cloudinaryUrl } from '../storage/cloudinary/client.js';
 import { isProductPublicId } from '../storage/cloudinary/folders.js';
@@ -28,7 +29,7 @@ function createProductSchema(config) {
     sku: z.string().trim().min(1).max(64),
     name: z.string().trim().min(1).max(160),
     description: z.string().trim().max(4000),
-    category: z.enum(['ring', 'necklace', 'earring', 'bracelet']),
+    category: z.enum(PRODUCT_CATEGORIES),
     priceInPaise: z.number().int().positive().max(2147483647),
     currency: z.literal('INR').default('INR'),
     stockQuantity: z.number().int().min(0).max(2147483647),
@@ -70,7 +71,7 @@ export function createProductsRouter(config) {
   router.get('/', async (req, res, next) => {
     try {
       const category = req.query.category;
-      if (category && !['ring', 'necklace', 'earring', 'bracelet'].includes(category)) {
+      if (category && !PRODUCT_CATEGORIES.includes(category)) {
         return res.status(400).json({ error: 'Choose a valid product category.' });
       }
       const filter = { active: true, ...(category ? { category } : {}) };
