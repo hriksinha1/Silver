@@ -1,4 +1,4 @@
-import { Client, Databases, Permission, Role, Storage } from 'node-appwrite';
+import { Client, Permission, Role, Storage, TablesDB } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { fileURLToPath } from 'node:url';
 
@@ -6,34 +6,34 @@ const endpoint = process.env.APPWRITE_ENDPOINT;
 const projectId = process.env.APPWRITE_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
 const databaseId = 'silveram-store';
-const ordersCollectionId = 'orders';
-const productsCollectionId = 'products';
+const ordersTableId = 'orders';
+const productsTableId = 'products';
 const productImagesBucketId = 'product-images';
 
-const orderAttributes = [
-  { key: 'userId', type: 'string', size: 36 },
-  { key: 'email', type: 'string', size: 254 },
-  { key: 'status', type: 'string', size: 32 },
-  { key: 'paymentMethod', type: 'string', size: 20 },
+const orderColumns = [
+  { key: 'userId', type: 'varchar', size: 36 },
+  { key: 'email', type: 'varchar', size: 254 },
+  { key: 'status', type: 'varchar', size: 32 },
+  { key: 'paymentMethod', type: 'varchar', size: 20 },
   { key: 'amountInPaise', type: 'integer' },
-  { key: 'currency', type: 'string', size: 3 },
-  { key: 'itemsJson', type: 'string', size: 10000 },
-  { key: 'shippingAddressJson', type: 'string', size: 2000 },
-  { key: 'razorpayOrderId', type: 'string', size: 100 },
-  { key: 'razorpayPaymentId', type: 'string', size: 100 },
+  { key: 'currency', type: 'varchar', size: 3 },
+  { key: 'itemsJson', type: 'text' },
+  { key: 'shippingAddressJson', type: 'text' },
+  { key: 'razorpayOrderId', type: 'varchar', size: 100 },
+  { key: 'razorpayPaymentId', type: 'varchar', size: 100 },
   { key: 'createdAt', type: 'datetime' },
 ];
 
-const productAttributes = [
-  { key: 'sku', type: 'string', size: 64 },
-  { key: 'name', type: 'string', size: 160 },
-  { key: 'description', type: 'string', size: 2000 },
-  { key: 'category', type: 'string', size: 32 },
+const productColumns = [
+  { key: 'sku', type: 'varchar', size: 64 },
+  { key: 'name', type: 'varchar', size: 160 },
+  { key: 'description', type: 'text' },
+  { key: 'category', type: 'varchar', size: 32 },
   { key: 'priceInPaise', type: 'integer' },
-  { key: 'currency', type: 'string', size: 3 },
+  { key: 'currency', type: 'varchar', size: 3 },
   { key: 'stockQuantity', type: 'integer' },
   { key: 'active', type: 'boolean' },
-  { key: 'imageFileId', type: 'string', size: 36 },
+  { key: 'imageFileId', type: 'varchar', size: 36 },
 ];
 
 const starterProducts = [
@@ -95,52 +95,52 @@ function assertEnvironment() {
   }
 }
 
-async function ensureDatabase(databases) {
+async function ensureDatabase(tablesDB) {
   try {
-    await databases.get(databaseId);
+    await tablesDB.get(databaseId);
   } catch (error) {
     if (error.code !== 404) throw error;
-    await databases.create(databaseId, 'Silveram Store');
+    await tablesDB.create(databaseId, 'Silveram Store', true, 'Silveram ecommerce data');
     console.log(`Created database: ${databaseId}`);
   }
 }
 
-async function ensureCollection(databases, collectionId, name) {
+async function ensureTable(tablesDB, tableId, name) {
   try {
-    const collection = await databases.getCollection(databaseId, collectionId);
-    if (!collection.documentSecurity || collection.permissions.length > 0) {
+    const table = await tablesDB.getTable(databaseId, tableId);
+    if (!table.rowSecurity || table.permissions.length > 0) {
       throw new Error(
-        `The existing ${collectionId} collection must have document security enabled and no collection-level permissions.`
+        `The existing ${tableId} table must have row security enabled and no table-level permissions.`
       );
     }
   } catch (error) {
     if (error.code !== 404) throw error;
-    await databases.createCollection(
+    await tablesDB.createTable(
       databaseId,
-      collectionId,
+      tableId,
       name,
       [],
       true,
       true
     );
-    console.log(`Created private collection: ${collectionId}`);
+    console.log(`Created private table: ${tableId}`);
   }
 }
 
-async function ensureAttributes(databases, collectionId, attributes) {
-  const existing = await databases.listAttributes(databaseId, collectionId);
-  const existingByKey = new Map(existing.attributes.map((attribute) => [attribute.key, attribute]));
-  const expectedKeys = new Set(attributes.map(({ key }) => key));
-  const unexpectedRequired = existing.attributes.find(
-    (attribute) => attribute.required && !expectedKeys.has(attribute.key)
+async function ensureColumns(tablesDB, tableId, columns) {
+  const existing = await tablesDB.listColumns(databaseId, tableId);
+  const existingByKey = new Map(existing.columns.map((column) => [column.key, column]));
+  const expectedKeys = new Set(columns.map(({ key }) => key));
+  const unexpectedRequired = existing.columns.find(
+    (column) => column.required && !expectedKeys.has(column.key)
   );
   if (unexpectedRequired) {
     throw new Error(
-      `Unexpected required attribute "${unexpectedRequired.key}" in ${collectionId}; the Function does not provide it.`
+      `Unexpected required column "${unexpectedRequired.key}" in ${tableId}; the Function does not provide it.`
     );
   }
 
-  for (const definition of attributes) {
+  for (const definition of columns) {
     const current = existingByKey.get(definition.key);
     if (current) {
       const mismatch =
@@ -153,49 +153,51 @@ async function ensureAttributes(databases, collectionId, attributes) {
       continue;
     }
 
-    if (definition.type === 'string') {
-      await databases.createStringAttribute(
+    if (definition.type === 'varchar') {
+      await tablesDB.createVarcharColumn(
         databaseId,
-        collectionId,
+        tableId,
         definition.key,
         definition.size,
         true
       );
+    } else if (definition.type === 'text') {
+      await tablesDB.createTextColumn(databaseId, tableId, definition.key, true);
     } else if (definition.type === 'integer') {
-      await databases.createIntegerAttribute(
+      await tablesDB.createIntegerColumn(
         databaseId,
-        collectionId,
+        tableId,
         definition.key,
         true,
         0,
         2147483647
       );
     } else if (definition.type === 'boolean') {
-      await databases.createBooleanAttribute(
+      await tablesDB.createBooleanColumn(
         databaseId,
-        collectionId,
+        tableId,
         definition.key,
         true
       );
     } else {
-      await databases.createDatetimeAttribute(databaseId, collectionId, definition.key, true);
+      await tablesDB.createDatetimeColumn(databaseId, tableId, definition.key, true);
     }
-    console.log(`Created attribute: ${definition.key}`);
+    console.log(`Created column: ${tableId}.${definition.key}`);
   }
 
   for (let attempt = 0; attempt < 60; attempt += 1) {
-    const result = await databases.listAttributes(databaseId, collectionId);
-    const current = new Map(result.attributes.map((attribute) => [attribute.key, attribute]));
-    const failed = attributes.find((definition) => current.get(definition.key)?.status === 'failed');
-    if (failed) throw new Error(`Appwrite could not create attribute "${failed.key}".`);
-    if (attributes.every((definition) => current.get(definition.key)?.status === 'available')) {
-      console.log('All order attributes are available.');
+    const result = await tablesDB.listColumns(databaseId, tableId);
+    const current = new Map(result.columns.map((column) => [column.key, column]));
+    const failed = columns.find((definition) => current.get(definition.key)?.status === 'failed');
+    if (failed) throw new Error(`Appwrite could not create column "${tableId}.${failed.key}".`);
+    if (columns.every((definition) => current.get(definition.key)?.status === 'available')) {
+      console.log(`All columns in ${tableId} are available.`);
       return;
     }
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
-  throw new Error('Timed out waiting for Appwrite to finish creating order attributes.');
+  throw new Error(`Timed out waiting for Appwrite to finish creating columns in ${tableId}.`);
 }
 
 async function ensureProductImagesBucket(storage) {
@@ -260,15 +262,15 @@ async function uploadProductImage(storage, product) {
   console.log(`Uploaded ${product.imageName}`);
 }
 
-async function ensureStarterProducts(databases, storage) {
+async function ensureStarterProducts(tablesDB, storage) {
   for (const product of starterProducts) {
     await uploadProductImage(storage, product);
     try {
-      const document = await databases.getDocument(databaseId, productsCollectionId, product.id);
+      const row = await tablesDB.getRow(databaseId, productsTableId, product.id);
       const expectedReadPermission = Permission.read(Role.any());
       if (
-        document.$permissions.length !== 1 ||
-        document.$permissions[0] !== expectedReadPermission
+        row.$permissions.length !== 1 ||
+        row.$permissions[0] !== expectedReadPermission
       ) {
         throw new Error(
           `Existing product "${product.id}" must have public-read-only permissions.`
@@ -276,9 +278,9 @@ async function ensureStarterProducts(databases, storage) {
       }
     } catch (error) {
       if (error.code !== 404) throw error;
-      await databases.createDocument(
+      await tablesDB.createRow(
         databaseId,
-        productsCollectionId,
+        productsTableId,
         product.id,
         {
           sku: product.sku,
@@ -301,23 +303,23 @@ async function ensureStarterProducts(databases, storage) {
 async function main() {
   assertEnvironment();
   const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
-  const databases = new Databases(client);
+  const tablesDB = new TablesDB(client);
   const storage = new Storage(client);
 
-  await ensureDatabase(databases);
-  await ensureCollection(databases, ordersCollectionId, 'Orders');
-  await ensureCollection(databases, productsCollectionId, 'Products');
-  await ensureAttributes(databases, ordersCollectionId, orderAttributes);
-  await ensureAttributes(databases, productsCollectionId, productAttributes);
+  await ensureDatabase(tablesDB);
+  await ensureTable(tablesDB, ordersTableId, 'Orders');
+  await ensureTable(tablesDB, productsTableId, 'Products');
+  await ensureColumns(tablesDB, ordersTableId, orderColumns);
+  await ensureColumns(tablesDB, productsTableId, productColumns);
   await ensureProductImagesBucket(storage);
-  await ensureStarterProducts(databases, storage);
+  await ensureStarterProducts(tablesDB, storage);
 
   console.log(`Database ID: ${databaseId}`);
-  console.log(`Orders collection ID: ${ordersCollectionId}`);
-  console.log(`Products collection ID: ${productsCollectionId}`);
+  console.log(`Orders table ID: ${ordersTableId}`);
+  console.log(`Products table ID: ${productsTableId}`);
   console.log(`Product image bucket ID: ${productImagesBucketId}`);
   console.log('Starter products are inactive with zero stock; no live orders can use them.');
-  console.log('Collections and bucket have no broad permissions; product documents/images are individually public-read.');
+  console.log('Tables and bucket have no broad permissions; product rows/images are individually public-read.');
 }
 
 main().catch((error) => {

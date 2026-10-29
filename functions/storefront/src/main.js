@@ -2,11 +2,11 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import {
   Account,
   Client,
-  Databases,
   ID,
   Permission,
   Query,
   Role,
+  TablesDB,
   Users,
 } from 'node-appwrite';
 
@@ -14,8 +14,8 @@ const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
 const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 const apiKey = process.env.APPWRITE_API_KEY;
 const databaseId = process.env.APPWRITE_DATABASE_ID;
-const ordersCollectionId = process.env.APPWRITE_ORDERS_COLLECTION_ID;
-const productsCollectionId = process.env.APPWRITE_PRODUCTS_COLLECTION_ID;
+const ordersTableId = process.env.APPWRITE_ORDERS_TABLE_ID;
+const productsTableId = process.env.APPWRITE_PRODUCTS_TABLE_ID;
 
 function getAdminClient() {
   if (
@@ -23,8 +23,8 @@ function getAdminClient() {
     !projectId ||
     !apiKey ||
     !databaseId ||
-    !ordersCollectionId ||
-    !productsCollectionId
+    !ordersTableId ||
+    !productsTableId
   ) {
     throw new Error('The Appwrite function is missing required environment configuration.');
   }
@@ -106,7 +106,7 @@ async function authenticatedUser(req) {
   return new Account(client).get();
 }
 
-async function getOrderItems(input, databases) {
+async function getOrderItems(input, tablesDB) {
   if (!Array.isArray(input) || input.length === 0 || input.length > 20) {
     throw new Error('Your bag is empty or contains too many different items.');
   }
@@ -129,7 +129,7 @@ async function getOrderItems(input, databases) {
   const products = await Promise.all(
     requestedItems.map(async ({ id, quantity }) => {
       try {
-        return { product: await databases.getDocument(databaseId, productsCollectionId, id), quantity };
+        return { product: await tablesDB.getRow(databaseId, productsTableId, id), quantity };
       } catch (error) {
         if (error?.code === 404) {
           throw new Error('An item in your bag is no longer available.');
@@ -244,11 +244,11 @@ async function createOrder(body, res, log, user) {
     return jsonError(res, 400, 'Choose a supported payment method.');
   }
 
-  const databases = new Databases(getAdminClient());
+  const tablesDB = new TablesDB(getAdminClient());
   let items;
   let shipping;
   try {
-    items = await getOrderItems(body.items, databases);
+    items = await getOrderItems(body.items, tablesDB);
     shipping = validateCustomer(body.customer);
   } catch (error) {
     if (
@@ -269,7 +269,7 @@ async function createOrder(body, res, log, user) {
   let existing;
 
   try {
-    existing = await databases.getDocument(databaseId, ordersCollectionId, body.requestId);
+    existing = await tablesDB.getRow(databaseId, ordersTableId, body.requestId);
   } catch (error) {
     if (error?.code !== 404) {
       log(`Order lookup failed (${error?.code ?? 'unknown'}).`);
@@ -312,16 +312,16 @@ async function createOrder(body, res, log, user) {
     let order = existing;
     if (!order) {
       try {
-        order = await databases.createDocument(
+        order = await tablesDB.createRow(
           databaseId,
-          ordersCollectionId,
+          ordersTableId,
           body.requestId,
           data,
           [Permission.read(Role.user(user.$id))]
         );
       } catch (error) {
         if (error?.code !== 409) throw error;
-        order = await databases.getDocument(databaseId, ordersCollectionId, body.requestId);
+        order = await tablesDB.getRow(databaseId, ordersTableId, body.requestId);
         if (
           order.userId !== user.$id ||
           order.paymentMethod !== body.paymentMethod ||
@@ -339,7 +339,7 @@ async function createOrder(body, res, log, user) {
     }
 
     const razorpay = await createRazorpayOrder(amountInPaise, body.requestId, user.$id);
-    order = await databases.updateDocument(databaseId, ordersCollectionId, body.requestId, {
+    order = await tablesDB.updateRow(databaseId, ordersTableId, body.requestId, {
       razorpayOrderId: razorpay.id,
     });
     return res.json(orderResponse(order, razorpay.keyId));
@@ -365,8 +365,8 @@ async function verifyPayment(body, res, log, user) {
   }
 
   try {
-    const databases = new Databases(getAdminClient());
-    const order = await databases.getDocument(databaseId, ordersCollectionId, requestId);
+    const tablesDB = new TablesDB(getAdminClient());
+    const order = await tablesDB.getRow(databaseId, ordersTableId, requestId);
     if (order.userId !== user.$id || order.paymentMethod !== 'razorpay') {
       return jsonError(res, 403, 'This payment does not match your order.');
     }
@@ -412,7 +412,7 @@ async function verifyPayment(body, res, log, user) {
       return jsonError(res, 409, 'The payment is not captured yet. Please contact the store if your account was charged.');
     }
 
-    await databases.updateDocument(databaseId, ordersCollectionId, requestId, {
+    await tablesDB.updateRow(databaseId, ordersTableId, requestId, {
       status: 'paid',
       razorpayPaymentId: paymentId,
     });
