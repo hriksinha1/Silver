@@ -1,6 +1,7 @@
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
 
 export const isCheckoutEnabled = import.meta.env.VITE_CHECKOUT_ENABLED === 'true';
+export const isRazorpayEnabled = import.meta.env.VITE_RAZORPAY_ENABLED === 'true';
 
 export async function apiRequest<T = void>(
   path: string,

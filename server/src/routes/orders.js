@@ -1,9 +1,13 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { ObjectId } from 'mongodb';
 import { Router } from 'express';
 import { z } from 'zod';
 import { collections, mongoClient } from '../db.js';
 import { requireUser } from '../middleware.js';
+import {
+  createRazorpayOrder,
+  verifyCapturedPayment,
+  verifyRazorpayCheckoutSignature,
+} from '../payments/razorpay/client.js';
 
 const requestSchema = z.object({
   requestId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/),
@@ -156,28 +160,7 @@ async function reserveOrder(config, input, user) {
   }
 
   if (order.paymentMethod === 'cod' || order.razorpayOrderId) return order;
-  const razorpayResponse = await fetch('https://api.razorpay.com/v1/orders', {
-    method: 'POST',
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${config.razorpayKeyId}:${config.razorpayKeySecret}`).toString('base64')}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      amount: order.amountInPaise,
-      currency: 'INR',
-      receipt: order._id,
-      notes: { silveram_order_id: order._id, silveram_user_id: user.id.toString() },
-    }),
-    signal: AbortSignal.timeout(10000),
-  });
-  if (!razorpayResponse.ok) {
-    await razorpayResponse.text();
-    throw Object.assign(new Error('The payment provider could not start checkout. Your stock is reserved temporarily; retry or contact the store.'), { status: 503 });
-  }
-  const razorpayOrder = await razorpayResponse.json();
-  if (razorpayOrder.amount !== order.amountInPaise || razorpayOrder.currency !== 'INR' || !razorpayOrder.id) {
-    throw Object.assign(new Error('The payment provider returned an invalid order.'), { status: 503 });
-  }
+  const razorpayOrder = await createRazorpayOrder(config, order, user);
   const updated = await orders.updateOne(
     { _id: order._id, status: 'pending_payment', reservationExpiresAt: { $gt: new Date() } },
     { $set: { razorpayOrderId: razorpayOrder.id, updatedAt: new Date() } },
@@ -281,8 +264,8 @@ export function createOrdersRouter(config) {
       }
       const parsed = requestSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ error: 'Check your delivery details and bag.' });
-      if (parsed.data.paymentMethod === 'razorpay' && (!config.razorpayKeyId || !config.razorpayKeySecret)) {
-        return res.status(503).json({ error: 'Online payments are not configured. Please choose cash on delivery.' });
+      if (parsed.data.paymentMethod === 'razorpay' && !config.razorpayEnabled) {
+        return res.status(503).json({ error: 'Online payments are not enabled. Please choose cash on delivery.' });
       }
 
       const order = await reserveOrder(config, parsed.data, req.user);
@@ -295,7 +278,7 @@ export function createOrdersRouter(config) {
 
   router.post('/:id/verify', async (req, res, next) => {
     try {
-      if (!config.liveCheckout || !config.razorpayKeyId || !config.razorpayKeySecret) {
+      if (!config.liveCheckout || !config.razorpayEnabled) {
         return res.status(503).json({ error: 'Payment verification is not configured.' });
       }
       const input = z.object({
@@ -317,11 +300,12 @@ export function createOrdersRouter(config) {
         return res.status(409).json({ error: 'This order is no longer awaiting payment.' });
       }
 
-      const expected = createHmac('sha256', config.razorpayKeySecret)
-        .update(`${razorpayOrderId}|${paymentId}`)
-        .digest();
-      const received = Buffer.from(signature, 'hex');
-      if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
+      if (!verifyRazorpayCheckoutSignature(
+        razorpayOrderId,
+        paymentId,
+        signature,
+        config.razorpayKeySecret,
+      )) {
         return res.status(400).json({ error: 'Payment verification failed.' });
       }
       if (!(await verifyCapturedPayment(config, order, paymentId))) {

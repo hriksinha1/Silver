@@ -34,6 +34,21 @@ export function loadConfig() {
   if (origins.length === 0 || origins.includes('*')) {
     throw new Error('FRONTEND_ORIGINS must contain explicit web origins and may not use "*".');
   }
+  if (nodeEnv === 'production' && origins.some((origin) => {
+    try {
+      return new URL(origin).protocol !== 'https:' || /localhost|127\.0\.0\.1/.test(new URL(origin).hostname);
+    } catch {
+      return true;
+    }
+  })) {
+    throw new Error('Production FRONTEND_ORIGINS must contain only valid HTTPS website origins.');
+  }
+
+  const razorpayEnabled = process.env.RAZORPAY_ENABLED === 'true';
+  const liveCheckout = process.env.STORE_LIVE_CHECKOUT === 'true';
+  if (razorpayEnabled && (!liveCheckout || !process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET || !process.env.RAZORPAY_WEBHOOK_SECRET)) {
+    throw new Error('Enable Razorpay only after checkout is enabled and all Razorpay keys are configured.');
+  }
 
   return {
     nodeEnv,
@@ -57,7 +72,8 @@ export function loadConfig() {
         .map((host) => host.trim().toLowerCase())
         .filter(Boolean),
     ),
-    liveCheckout: process.env.STORE_LIVE_CHECKOUT === 'true',
+    liveCheckout,
+    razorpayEnabled,
     otpTtlMinutes: positiveInteger('OTP_TTL_MINUTES', 10),
     otpMaxAttempts: positiveInteger('OTP_MAX_ATTEMPTS', 5),
     otpResendSeconds: positiveInteger('OTP_RESEND_SECONDS', 60),

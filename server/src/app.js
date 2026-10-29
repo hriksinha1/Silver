@@ -7,6 +7,7 @@ import { createProductsRouter } from './routes/products.js';
 import { createOrdersRouter } from './routes/orders.js';
 import { createAdminRouter } from './routes/admin.js';
 import { createWebhookRouter } from './routes/webhooks.js';
+import { checkDatabase } from './db.js';
 
 export function createApp(config) {
   const app = express();
@@ -27,7 +28,10 @@ export function createApp(config) {
   app.use('/api/webhooks', createWebhookRouter(config));
   app.use(express.json({ limit: '32kb' }));
 
-  app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/api/health', async (_req, res) => {
+    await checkDatabase();
+    return res.json({ status: 'ok' });
+  });
   app.use('/api/auth', createAuthRouter(config));
   app.use('/api/products', createProductsRouter(config));
   app.use('/api/orders', createOrdersRouter(config));

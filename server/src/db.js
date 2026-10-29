@@ -6,8 +6,10 @@ let database;
 export async function connectDatabase(config) {
   client = new MongoClient(config.mongoUri, {
     appName: 'silveram-api',
-    maxPoolSize: 30,
-    minPoolSize: 2,
+    maxPoolSize: 10,
+    minPoolSize: 0,
+    maxIdleTimeMS: 60000,
+    waitQueueTimeoutMS: 10000,
     serverSelectionTimeoutMS: 10000,
     connectTimeoutMS: 10000,
     retryWrites: true,
@@ -56,6 +58,11 @@ export function collections() {
 export function mongoClient() {
   if (!client) throw new Error('MongoDB is not connected.');
   return client;
+}
+
+export async function checkDatabase() {
+  if (!database) throw new Error('MongoDB is not connected.');
+  await database.command({ ping: 1 });
 }
 
 export async function closeDatabase() {

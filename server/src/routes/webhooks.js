@@ -1,19 +1,12 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { Router } from 'express';
 import { collections } from '../db.js';
-
-function validSignature(body, signature, secret) {
-  if (!signature || !secret) return false;
-  const expected = createHmac('sha256', secret).update(body).digest();
-  const received = Buffer.from(signature, 'hex');
-  return received.length === expected.length && timingSafeEqual(received, expected);
-}
+import { verifyRazorpayWebhookSignature } from '../payments/razorpay/signatures.js';
 
 export function createWebhookRouter(config) {
   const router = Router();
   router.post('/razorpay', async (req, res, next) => {
     try {
-      if (!Buffer.isBuffer(req.body) || !validSignature(
+      if (!config.razorpayEnabled || !Buffer.isBuffer(req.body) || !verifyRazorpayWebhookSignature(
         req.body,
         req.get('x-razorpay-signature'),
         config.razorpayWebhookSecret,

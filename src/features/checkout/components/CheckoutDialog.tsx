@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { apiRequest, isCheckoutEnabled } from '@/shared/lib/api';
+import { apiRequest, isCheckoutEnabled, isRazorpayEnabled } from '@/shared/lib/api';
 import { formatINR } from '@/shared/lib/money';
 import { CloseIcon } from '@/shared/ui/icons';
 import Button from '@/shared/ui/Button';
@@ -88,7 +88,7 @@ export default function CheckoutDialog({
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('razorpay');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
@@ -482,15 +482,23 @@ export default function CheckoutDialog({
 
               <fieldset className="space-y-2 border-t border-[#E2DEE5] pt-4">
                 <legend className="mb-2 text-xs font-semibold">Payment method</legend>
-                <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-[#DCD7DF] p-3 text-sm">
-                  <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className="mt-0.5 accent-[#69388F]" />
-                  <span><strong className="block text-xs">Pay online</strong><span className="text-xs text-[#706977]">Secure payment with Razorpay</span></span>
-                </label>
+                {isRazorpayEnabled && (
+                  <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-[#DCD7DF] p-3 text-sm">
+                    <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className="mt-0.5 accent-[#69388F]" />
+                    <span><strong className="block text-xs">Pay online</strong><span className="text-xs text-[#706977]">Secure payment with Razorpay</span></span>
+                  </label>
+                )}
                 <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-[#DCD7DF] p-3 text-sm">
                   <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="mt-0.5 accent-[#69388F]" />
                   <span><strong className="block text-xs">Cash on delivery</strong><span className="text-xs text-[#706977]">Pay when your order arrives</span></span>
                 </label>
               </fieldset>
+              {paymentMethod === 'cod' && (
+                <p className="text-xs leading-relaxed text-[#706977]">
+                  Pay the order total in cash when your delivery arrives. Make sure your phone number
+                  and delivery address are correct.
+                </p>
+              )}
 
               <div className="flex items-center justify-between border-t border-[#E2DEE5] pt-4 text-sm">
                 <span>Estimated total</span>
