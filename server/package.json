@@ -1,0 +1,22 @@
+{
+  "name": "silveram-api",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/index.js",
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "check": "node --check src/index.js && node --check src/app.js && node --check src/routes/auth.js && node --check src/routes/products.js && node --check src/routes/orders.js && node --check src/routes/admin.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "mongodb": "^6.18.0",
+    "nodemailer": "^7.0.6",
+    "zod": "^4.1.12"
+  }
+}
