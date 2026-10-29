@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useRef, useState, useEffect } from 'react';
+import { lazy, Suspense, useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -19,10 +19,11 @@ import HeroSection from '@/features/storefront/components/HeroSection';
 import TestimonialsSection from '@/features/storefront/components/TestimonialsSection';
 import WhyChooseSection from '@/features/storefront/components/WhyChooseSection';
 import Toast from '@/shared/ui/Toast';
-import CheckoutDialog from '@/features/checkout/components/CheckoutDialog';
 import { useCart } from '@/features/cart/context/CartContext';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const CheckoutDialog = lazy(() => import('@/features/checkout/components/CheckoutDialog'));
 
 function Storefront() {
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
@@ -144,12 +145,22 @@ function Storefront() {
         }}
       />
 
-      <CheckoutDialog
-        isOpen={isCheckoutOpen}
-        cart={cart}
-        onClose={() => setIsCheckoutOpen(false)}
-        onOrderComplete={clearCart}
-      />
+      {isCheckoutOpen && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 text-sm text-white" role="status">
+              Loading secure checkout…
+            </div>
+          }
+        >
+          <CheckoutDialog
+            isOpen
+            cart={cart}
+            onClose={() => setIsCheckoutOpen(false)}
+            onOrderComplete={clearCart}
+          />
+        </Suspense>
+      )}
 
       {/* Policy Modal Dialog */}
       <PolicyModal

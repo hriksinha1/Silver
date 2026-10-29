@@ -64,16 +64,13 @@ export function PolicyModal({ isOpen, onClose, title }: PolicyModalProps) {
 
         <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#4E4852]">
           <div className="rounded-[2px] bg-[#FAF8FB] p-3 text-xs text-[#69388F] border border-[#E2DEE5]">
-            Demonstration copy: replace with your own policy before commercial production.
+            This {title.toLowerCase()} has not been finalized. Live orders must remain disabled until Silveram publishes approved policy details and a support contact.
           </div>
           <p>
-            Welcome to Silveram. This website is a portfolio landing page demonstration created to exhibit modern frontend design, typography, layout rhythm, and responsive craftsmanship.
+            Checkout uses email verification and, once configured, stores customer and delivery details with Appwrite to process orders. Online payments are processed by Razorpay. Cart contents are also saved in this browser.
           </p>
           <p>
-            No user tracking cookies or persistent identifiers are transmitted to third parties. Any cart items and interactions reside solely within your browser session memory.
-          </p>
-          <p>
-            All jewellery photographs, brand concepts, and product titles are demonstration placeholders honoring artisanal luxury aesthetics.
+            Before launch, replace this notice with the store's actual privacy, payment, shipping, cancellation, returns, and refund terms, including applicable retention periods and customer-support details.
           </p>
         </div>
 
