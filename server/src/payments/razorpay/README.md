@@ -7,7 +7,7 @@ This directory is the isolated Razorpay provider adapter. It is prepared for a l
 - `RAZORPAY_ENABLED=false` on the API and `VITE_RAZORPAY_ENABLED=false` in the storefront build.
 - The API configuration refuses to enable Razorpay unless checkout is enabled and all three server credentials are present.
 - Checkout remains globally gated by `STORE_LIVE_CHECKOUT=false` and `VITE_CHECKOUT_ENABLED=false`.
-- The customer-facing checkout currently selects and displays COD only.
+- If the globally gated checkout UI is enabled for staging, COD is the only method currently shown.
 - Do not set these switches to `true` for production until the launch checks below are complete.
 
 ## Code map

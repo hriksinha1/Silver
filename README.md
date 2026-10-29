@@ -15,13 +15,21 @@ A jewellery storefront built with React, TypeScript, Vite, Tailwind CSS, and GSA
 ```powershell
 npm install
 npm --prefix server install
+```
+
+Run these in separate terminals:
+
+```powershell
 npm run dev
+```
+
+```powershell
 npm run dev:server
 ```
 
 The storefront runs on `http://localhost:3000`; Vite proxies `/api` to the API at `http://127.0.0.1:4000`.
 
-The local `server/.env` is ignored by Git and restricted to the current Windows user. **Never print, commit, upload, or share it.** It is already configured on this machine. On a new machine, create it from `server/.env.example` only if it does not exist, then add secrets through a secure local process or a secret manager.
+The local `server/.env` is ignored by Git and restricted to the current Windows user. **Never print, commit, upload, or share it.** This workspace already has a configured local file. On a new machine, create it from `server/.env.example` only if it does not exist, then add secrets through a secure local process or a secret manager.
 
 ## Project structure
 
