@@ -30,7 +30,9 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 | `server/src/routes/orders.js` | Owner order history, checkout, inventory reservation, payment verification |
 | `server/src/routes/webhooks.js` | Signed Razorpay capture/refund events |
 | `server/src/routes/admin.js` | Allowlisted staff order lookup and fulfillment |
+| `server/src/payments/razorpay/` | Isolated Razorpay order creation, captured-payment verification, and signature helpers; disabled until separately configured |
 | `server/src/scripts/seed-catalog.js` | Adds missing inactive starter items without overwriting existing catalog rows |
+| `server/app.js` | Vercel Express entry point; reuses the process-level Mongo connection and exports the API app |
 | `server/.env.example` | Configuration template; put actual values only in ignored `server/.env` |
 
 ## Atlas setup
@@ -68,6 +70,8 @@ MongoDB stores image references, not image binaries. Current demo images are ser
 - CORS allows only explicit `FRONTEND_ORIGINS`. Never use `*` with credentials. Set `NODE_ENV=production` in deployment and set `TRUST_PROXY_HOPS` to the exact number of trusted ingress proxies; an incorrect value can make IP-based rate limits unreliable.
 - Helmet security headers, JSON body-size limits, Zod request validation, escaped/static product images, parameterized MongoDB queries, and server-side price calculation are used.
 - Do not expose MongoDB, SMTP, Razorpay, OTP, or session secrets as `VITE_*` variables. Do not grant the web client database credentials.
+- Checkout requires a verified email, recipient name, 10-digit Indian phone, street address, city, state, and six-digit PIN. COD stock decrement/order creation is transactional; order details are restricted to the owner and allowlisted admins.
+- Online payment is disabled in both layers by default (`VITE_RAZORPAY_ENABLED=false`, `RAZORPAY_ENABLED=false`). Provider code is isolated in `server/src/payments/razorpay/`; only enable it after account activation, payment tests, webhook setup, and reliable expired-reservation scheduling.
 
 ### Email OTP
 
@@ -116,6 +120,19 @@ npm run dev:server
 ```
 
 Vite proxies `/api` to `http://127.0.0.1:4000`. The API's `/api/health` endpoint indicates that the HTTP process is available; confirm the server startup log also says MongoDB connected before treating the deployment as healthy.
+
+### Vercel
+
+Deploy this monorepo as two Vercel projects:
+
+1. **Storefront:** project root is the repository root; framework Vite, build command `npm run build`, output directory `dist`.
+2. **API:** project root is `server/`; Vercel detects the Express app exported from `server/app.js` as one serverless function. Configure its production environment variables in Vercel's encrypted Environment Variables UI; do not upload `server/.env`.
+3. Use a custom domain and same-site hostnames for the web app and API (for example `shop.example.com` and `api.example.com`). Set storefront `VITE_API_BASE_URL=https://api.example.com/api` and `VITE_CHECKOUT_ENABLED=false`. Set API `FRONTEND_ORIGINS=https://shop.example.com`, `NODE_ENV=production`, `TRUST_PROXY_HOPS=1`, `MONGODB_URI`, `MONGODB_DB_NAME`, `SESSION_SECRET`, and `OTP_PEPPER`. Rebuild/redeploy the storefront whenever its `VITE_*` values change.
+4. Add only the API deployment's static egress IP to Atlas Network Access. If your Vercel plan/deployment does not provide a stable egress IP, do not compensate with `0.0.0.0/0`; choose a deployment/network option with fixed egress or use an appropriately configured private network.
+5. Confirm `https://api.example.com/api/health` returns `{"status":"ok"}` after connecting to Atlas. The endpoint pings MongoDB, not just the HTTP process.
+6. Vercel serverless functions do not run the Node server's in-process reservation sweeper. COD does not create expiring reservations. Razorpay remains off until a reliable external scheduler or suitable Vercel cron plan can release expired reservations; Vercel Hobby cron is limited to once daily, which is not suitable for 30-minute payment reservations.
+
+Vercel deployment cannot be completed from this workspace without linking your Vercel account, domain, and project settings. Never put Atlas credentials in frontend `VITE_*` variables.
 
 ### Production
 
