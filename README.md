@@ -45,7 +45,7 @@ npm run preview
 
 ## Storefront and backend status
 
-The checkout calls a separate Node.js API backed by MongoDB. Email OTP, secure cookie sessions, server-priced orders, transactional inventory reservations, Razorpay verification, webhook reconciliation, and allowlisted admin CRUD live in `server/`.
+The checkout calls a Node.js API backed by MongoDB. Email OTP, secure cookie sessions, server-priced COD orders, transactional inventory, isolated Razorpay integration, webhooks, and allowlisted admin CRUD live in `server/`.
 
 The database structure, Atlas setup, collections/indexes, admin operations, API routes, secrets, and launch checklist are documented in [docs/MONGODB_SETUP.md](./docs/MONGODB_SETUP.md).
 
@@ -62,4 +62,4 @@ The app can be deployed as a static Vite site. Use:
 - Build command: `npm run build`
 - Output directory: `dist`
 - Node.js: `^20.19.0` or `>=22.12.0`
-- The API in `server/` must also be deployed as a long-running Node.js service and routed at `/api`.
+- The API in `server/` can be deployed as a Vercel Express function from the `server/` project root. See the [Vercel deployment instructions](./docs/MONGODB_SETUP.md#vercel).

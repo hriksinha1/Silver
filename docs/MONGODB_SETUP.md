@@ -44,7 +44,7 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 5. `SESSION_SECRET` and `OTP_PEPPER` are separate cryptographically random secrets of at least 32 bytes. Keep them out of source control, browser build variables, issue trackers, and chat.
 6. Configure MongoDB TLS (Atlas defaults to TLS) and verify the actual API host can connect before enabling any checkout route.
 
-For local development, create a local MongoDB instance or use an Atlas development cluster with an IP-restricted URI. Run the server from the repository root with `npm --prefix server run dev`.
+For local development, use a local MongoDB instance or the existing IP-restricted Atlas development cluster. The current ignored `server/.env` is already configured; never overwrite it with the template. On a new machine, create that file only if it does not already exist, then set local secrets securely. Run the server from the repository root with `npm --prefix server run dev`.
 
 ## Collections and indexes
 
@@ -119,7 +119,7 @@ npm run dev
 npm run dev:server
 ```
 
-Vite proxies `/api` to `http://127.0.0.1:4000`. The API's `/api/health` endpoint indicates that the HTTP process is available; confirm the server startup log also says MongoDB connected before treating the deployment as healthy.
+Vite proxies `/api` to `http://127.0.0.1:4000`. The `/api/health` endpoint pings MongoDB before reporting the API ready.
 
 ### Vercel
 
@@ -141,7 +141,7 @@ Vercel deployment cannot be completed from this workspace without linking your V
 3. Use HTTPS end-to-end. Set the correct trusted proxy count rather than trusting arbitrary forwarded IP headers.
 4. Configure Razorpay test credentials first and a webhook pointed at `/api/webhooks/razorpay`; store `RAZORPAY_WEBHOOK_SECRET` as a secret.
 5. Enable automatic capture. Test payment success, failure, cancellation, duplicate callbacks, browser-close reconciliation, webhook replay, and refund workflow.
-6. Keep both checkout flags false until staging has passed. Only then deliberately set `STORE_LIVE_CHECKOUT=true` on the API and `VITE_CHECKOUT_ENABLED=true` on the frontend build.
+6. COD is the only payment option currently shown. Keep both checkout flags false until staging has passed. Only then deliberately set `STORE_LIVE_CHECKOUT=true` on the API and `VITE_CHECKOUT_ENABLED=true` on the frontend build. Keep `RAZORPAY_ENABLED=false` and `VITE_RAZORPAY_ENABLED=false` until the later Razorpay integration, credentials, webhook, and reservation worker have been tested.
 
 ## Production launch checklist
 
@@ -150,7 +150,7 @@ Vercel deployment cannot be completed from this workspace without linking your V
 - [ ] Production site origins, TLS, trusted proxy/IP settings, and cookie behavior are verified.
 - [ ] Admin addresses are correct and each authorized staff member has verified their own email.
 - [ ] Real product materials, price/tax treatment, image rights, stock counts, shipping charges/coverage, invoices, and published legal/privacy/return policies are approved.
-- [ ] Razorpay account activation, test/live keys, automatic capture, webhooks, reconciliation, refund process, and alerting are tested.
+- [ ] If online payment is launched later: Razorpay account activation, test/live keys, automatic capture, webhooks, reservation expiry worker, reconciliation, refund process, and alerting are tested. Keep Razorpay disabled until then.
 - [ ] Transaction concurrency tests demonstrate no overselling; reservation expiry and worker recovery are tested in the deployed hosting model.
 - [ ] Order confirmation emails, support/fulfillment/tracking operations, monitoring, alerts, and incident/key rotation runbooks are in place.
 - [ ] Staging has passed signup/sign-in, OTP abuse cases, COD, successful/failed/cancelled payment, duplicate requests, webhook retry, order privacy, and full refund tests.

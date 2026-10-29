@@ -216,24 +216,6 @@ export function startReservationSweeper() {
   timer.unref();
 }
 
-async function verifyCapturedPayment(config, order, paymentId) {
-  const response = await fetch(
-    `https://api.razorpay.com/v1/payments/${encodeURIComponent(paymentId)}`,
-    {
-      headers: {
-        Authorization: `Basic ${Buffer.from(`${config.razorpayKeyId}:${config.razorpayKeySecret}`).toString('base64')}`,
-      },
-      signal: AbortSignal.timeout(10000),
-    },
-  );
-  if (!response.ok) return false;
-  const payment = await response.json();
-  return payment.order_id === order.razorpayOrderId &&
-    payment.amount === order.amountInPaise &&
-    payment.currency === 'INR' &&
-    payment.status === 'captured';
-}
-
 export function createOrdersRouter(config) {
   const router = Router();
 
