@@ -6,6 +6,7 @@ import { createAuthRouter } from './routes/auth.js';
 import { createProductsRouter } from './routes/products.js';
 import { createOrdersRouter } from './routes/orders.js';
 import { createAdminRouter } from './routes/admin.js';
+import { createUploadsRouter } from './routes/uploads.js';
 import { createWebhookRouter } from './routes/webhooks.js';
 import { checkDatabase } from './db.js';
 
@@ -34,6 +35,7 @@ export function createApp(config) {
   });
   app.use('/api/auth', createAuthRouter(config));
   app.use('/api/products', createProductsRouter(config));
+  app.use('/api/uploads', createUploadsRouter(config));
   app.use('/api/orders', createOrdersRouter(config));
   app.use('/api/admin', createAdminRouter(config));
 

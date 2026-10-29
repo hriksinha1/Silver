@@ -50,6 +50,15 @@ export function loadConfig() {
     throw new Error('Enable Razorpay only after checkout is enabled and all Razorpay keys are configured.');
   }
 
+  const cloudinaryVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
+  const cloudinarySet = cloudinaryVars.filter((name) => process.env[name]?.trim());
+  if (cloudinarySet.length > 0 && cloudinarySet.length < cloudinaryVars.length) {
+    throw new Error('Set all of CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET, or none.');
+  }
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(process.env.CLOUDINARY_ROOT_FOLDER?.trim() || 'silveram')) {
+    throw new Error('CLOUDINARY_ROOT_FOLDER may only contain lowercase letters, numbers, "-" and "_".');
+  }
+
   return {
     nodeEnv,
     isProduction: nodeEnv === 'production',
@@ -72,6 +81,10 @@ export function loadConfig() {
         .map((host) => host.trim().toLowerCase())
         .filter(Boolean),
     ),
+    cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME?.trim() || '',
+    cloudinaryApiKey: process.env.CLOUDINARY_API_KEY?.trim() || '',
+    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    cloudinaryRootFolder: process.env.CLOUDINARY_ROOT_FOLDER?.trim() || 'silveram',
     liveCheckout,
     razorpayEnabled,
     otpTtlMinutes: positiveInteger('OTP_TTL_MINUTES', 10),

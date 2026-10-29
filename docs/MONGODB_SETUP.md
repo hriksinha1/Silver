@@ -156,3 +156,34 @@ Vercel deployment cannot be completed from this workspace without linking your V
 - [ ] Staging has passed signup/sign-in, OTP abuse cases, COD, successful/failed/cancelled payment, duplicate requests, webhook retry, order privacy, and full refund tests.
 
 The free Atlas cluster and code foundation are provisioned for development/testing, not production. Production still requires an authorized paid cluster and backup plan, verified mail/payment accounts, deployment/network settings, approved tax/shipping/legal policies, and real-world staging tests.
+
+## Data storage split: Cloudinary vs MongoDB
+
+| Data | Where |
+|---|---|
+| Product and site image files | **Cloudinary** (never MongoDB) |
+| Image references (`publicId`, `width`, `height`, `alt`) | MongoDB `products.images[]` |
+| Users, phone/email, addresses, orders, transaction/payment IDs, sessions | **MongoDB** |
+
+### Cloudinary folder structure
+
+```
+silveram/
+├── development/            # dev uploads never mix with production
+│   ├── products/<sku>/     # one folder per product, e.g. products/sr-001/<generated-id>
+│   └── site/{hero,categories,editorial,avatars}/
+└── production/
+    ├── products/<sku>/
+    └── site/...
+```
+
+Code: `server/src/storage/cloudinary/folders.js` (paths), `client.js` (signing, delivery URL, delete).
+
+### Upload flow
+
+1. Admin calls `POST /api/uploads/sign` with `{ "target": "product", "sku": "SR-001" }` (or `{ "target": "site", "area": "hero" }`).
+2. API returns a short-lived SHA-1 signed payload (`uploadUrl`, `apiKey`, `signature`, `timestamp`, `folder`, `allowed_formats`). The API secret never leaves the server.
+3. The browser POSTs the file plus those fields to `uploadUrl`, then sends the returned `public_id`, `width`, `height` to `POST/PATCH /api/products/admin` as `images: [{ publicId, width, height, alt }]`.
+4. The API rejects any `publicId` outside `products/<sku>/` of the current environment, and returns optimised delivery URLs (`f_auto,q_auto,c_limit,w_1200`) on every product as `images[].url` / `imageUrl`.
+
+Setup: fill `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` in `server/.env` (all or none; set them in the deployment secret manager for production). Legacy `/images/*.webp` entries keep working until migrated.
