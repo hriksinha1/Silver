@@ -4,23 +4,32 @@ The storefront is configured for India (INR), Appwrite's native six-digit email 
 
 ## 1. Create the Appwrite project
 
-1. Create a project in Appwrite Cloud and select a region close to your customers.
-2. In **Platforms**, add your local web origin (for example `http://localhost:3000`) and the exact production website hostname.
-3. In **Auth > Settings**, enable email/passwordless email OTP and configure a verified sender/domain and email template. Appwrite's native email OTP is six digits; this project uses that native flow.
-4. Confirm the free plan currently includes the Function runtime, email OTP, and the quotas needed for your expected traffic. Appwrite plan limits can change; monitor usage and email delivery before launch.
+The project identifiers you shared are configured locally in the ignored `.env.local` file and in `.env.example`:
 
-## 2. Create the orders database
+- Project ID: `6ae2df98002eb5a1a39b`
+- Endpoint: `https://sgp.cloud.appwrite.io/v1`
 
-The repository includes an idempotent provisioning script for the database and private `orders` collection. From PowerShell, set local environment variables (do not commit or share the API key) and run it:
+1. In **Platforms**, add `http://localhost:3000` and the exact production website hostname to project `6ae2df98002eb5a1a39b`.
+2. In **Auth > Settings**, enable email/passwordless email OTP and configure a verified sender/domain and email template. Appwrite's native email OTP is six digits; this project uses that native flow. Guest checkout creates a password-free Appwrite account when the email is new.
+3. Configure the project's allowed origins to include the deployed website. Do not use wildcard origins for production.
+4. Confirm the free plan currently includes the Function runtime, email OTP, storage and database quotas needed for your expected traffic. Appwrite plan limits can change; monitor usage and email delivery before launch.
+
+## 2. Provision database, catalog, and product photos
+
+The repository includes an idempotent provisioning script. It creates database `silveram-store`, the private `orders` collection, a `products` collection, and the `product-images` storage bucket. It uploads the five existing product photos and creates matching starter product records. Starter product records are deliberately **inactive and have zero stock**, so sample products cannot be sold accidentally.
+
+Create a short-lived Appwrite server API key with `databases.read`, `databases.write`, `storage.read`, and `storage.write` scopes. From PowerShell, set the key locally (do not commit it, place it in a frontend env variable, or share it in chat) and run:
 
 ```powershell
-$env:APPWRITE_ENDPOINT = "https://<your-region>.cloud.appwrite.io/v1"
-$env:APPWRITE_PROJECT_ID = "<your-project-id>"
+$env:APPWRITE_ENDPOINT = "https://sgp.cloud.appwrite.io/v1"
+$env:APPWRITE_PROJECT_ID = "6ae2df98002eb5a1a39b"
 $env:APPWRITE_API_KEY = "<server-api-key>"
 npm run provision:database --prefix functions\storefront
 ```
 
-The script creates the `silveram-store` database and `orders` collection, then waits for all required attributes to become available. It refuses to modify an existing collection if its permissions or schema do not match. The API key needs `databases.read` and `databases.write`; do not paste it into chat or commit it. The script prints the resource IDs for Function configuration.
+The script waits for all attributes to become available, uploads images with public-read-only permissions, and adds product records with individual public-read permissions. Collections and the bucket do not have broad permissions. It will not overwrite existing product records or accept an existing collection/bucket with unsafe permissions. The script prints the resource IDs for Function configuration. No API key has been provided to this environment, so remote resources have **not** yet been created.
+
+### `orders` collection
 
 | Attribute | Type | Required | Size / notes |
 |---|---|---:|---|
@@ -36,7 +45,23 @@ The script creates the `silveram-store` database and `orders` collection, then w
 | `razorpayPaymentId` | String | yes | 100; allow empty string |
 | `createdAt` | Datetime | yes | ISO-8601 |
 
-Do not grant public create, update, or delete access to this collection. The Function writes documents with read permission limited to the owning user; all checkout writes and payment status updates use its server API key. No client-side collection permissions are needed for checkout.
+Do not grant public create, update, or delete access to orders. The Function writes documents with read permission limited to the owning user; order/payment writes use its server API key.
+
+### `products` collection
+
+| Attribute | Type | Required | Size / notes |
+|---|---|---:|---|
+| `sku` | String | yes | 64 |
+| `name` | String | yes | 160 |
+| `description` | String | yes | 2,000 |
+| `category` | String | yes | 32 |
+| `priceInPaise` | Integer | yes | Canonical INR price in paise |
+| `currency` | String | yes | 3; `INR` |
+| `stockQuantity` | Integer | yes | Set actual inventory before launch |
+| `active` | Boolean | yes | Keep false until verified for sale |
+| `imageFileId` | String | yes | 36; file in product image bucket |
+
+Product documents and image files are publicly readable; only the backend API key should write them. Never put customer information or private order images in this bucket.
 
 ## 3. Deploy the storefront Function
 
@@ -49,11 +74,14 @@ Set these Function variables/secrets in Appwrite (never add the API key or Razor
 | `APPWRITE_API_KEY` | Server API key with only `users.read`, `databases.read`, and `databases.write` scopes |
 | `APPWRITE_DATABASE_ID` | ID of the database created above |
 | `APPWRITE_ORDERS_COLLECTION_ID` | ID of the `orders` collection |
+| `APPWRITE_PRODUCTS_COLLECTION_ID` | ID of the `products` collection |
 | `RAZORPAY_KEY_ID` | Razorpay key ID (not secret) |
 | `RAZORPAY_KEY_SECRET` | Razorpay secret; store as a secret |
 | `STORE_LIVE_CHECKOUT` | Keep `false` until staging and launch checks pass; set to `true` deliberately to enable Function routes |
 
-Appwrite injects `APPWRITE_FUNCTION_API_ENDPOINT` and `APPWRITE_FUNCTION_PROJECT_ID` into Functions. The Function checks authenticated calls with the Appwrite user JWT, validates every submitted field, rebuilds totals from its own allow-listed catalog, applies order-request idempotency, and verifies Razorpay signatures and captured payment status before marking an order paid.
+Appwrite injects `APPWRITE_FUNCTION_API_ENDPOINT` and `APPWRITE_FUNCTION_PROJECT_ID` into Functions. The Function checks authenticated calls with the Appwrite user JWT, validates every submitted field, reads current prices and stock from the Appwrite products collection, applies order-request idempotency, and verifies Razorpay signatures and captured payment status before marking an order paid.
+
+The local provisioning API key and Function runtime API key should be separate. The Function key needs `users.read`, `databases.read`, and `databases.write`; it does not need storage write access.
 
 ## 4. Configure Razorpay
 
@@ -70,16 +98,18 @@ Copy `.env.example` to `.env.local` and set:
 
 ```env
 VITE_APPWRITE_ENDPOINT=https://<your-region>.cloud.appwrite.io/v1
-VITE_APPWRITE_PROJECT_ID=<your-project-id>
+VITE_APPWRITE_PROJECT_ID=6ae2df98002eb5a1a39b
 VITE_APPWRITE_STORE_FUNCTION_ID=<deployed-function-id>
+VITE_APPWRITE_PRODUCT_IMAGES_READY=false
 VITE_CHECKOUT_ENABLED=false
 ```
 
-Only these public project identifiers and the checkout toggle belong in the frontend. Keep the toggle `false` until the backend is configured. To test staging, use Razorpay test credentials, set `STORE_LIVE_CHECKOUT=true` in the Function, set `VITE_CHECKOUT_ENABLED=true` in the staging frontend, and redeploy. Keep production off until all launch checks pass; both the UI and backend default to disabled.
+The endpoint and project ID are public identifiers; API keys and payment secrets are not. Set `VITE_APPWRITE_PRODUCT_IMAGES_READY=true` only after the image bucket has been provisioned and populated. Keep checkout disabled until the backend is configured. For staging, use Razorpay test credentials, enable `STORE_LIVE_CHECKOUT` only after inventory controls are implemented, set `VITE_CHECKOUT_ENABLED=true` and redeploy.
 
 ## 6. Before accepting real orders
 
-- Replace the sample product catalog and prices in both `src/features/storefront/data/catalog.ts` and `functions/storefront/src/main.js`. The Function catalog is authoritative. Add stock reservation and refund reconciliation before promising inventory.
+- Replace the sample catalog entries and photos with the real products; edit product names, descriptions, prices, stock, and active status in Appwrite. Verify all amounts are INR and GST treatment is settled.
+- Implement atomic stock reservation/decrement and reservation expiry. The current Function checks stock but does not reserve or decrement it, so simultaneous orders can oversell. Do not enable live checkout until this is addressed.
 - Confirm GST treatment, invoices, shipping charges/eligibility, delivery coverage, COD availability, cancellation/return/refund rules, and the legal/privacy text for the actual business. The current storefront content is not legal advice or a substitute for approved policies.
 - Add a real order confirmation email, fulfillment/admin workflow, shipping tracking, and operational monitoring. The current UI only displays the order reference; it does not send an order confirmation email.
 - Test signup, returning-user OTP, invalid/expired code, rate limits, COD, payment cancellation, duplicate submit, failed payment, successful captured payment, and browser-close recovery in a staging project.
