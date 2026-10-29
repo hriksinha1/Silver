@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+const MAX_ITEM_QUANTITY = 10;
+
 export interface CartItem {
   id: string;
   name: string;
-  price: number; // in USD
+  price: number;
   quantity: number;
   image?: string;
   subtitle?: string;
@@ -33,7 +35,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed: unknown = JSON.parse(saved);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((item): item is CartItem =>
+        Boolean(
+          item &&
+          typeof item.id === 'string' &&
+          typeof item.name === 'string' &&
+          Number.isFinite(item.price) &&
+          item.price > 0 &&
+          Number.isInteger(item.quantity) &&
+          item.quantity > 0 &&
+          item.quantity <= MAX_ITEM_QUANTITY
+        )
+      );
     } catch {
       return [];
     }
@@ -69,6 +85,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
+        if (existing.quantity >= MAX_ITEM_QUANTITY) {
+          setToastMessage(`Maximum ${MAX_ITEM_QUANTITY} of each item per order`);
+          setLiveAnnouncement(`Maximum ${MAX_ITEM_QUANTITY} of each item per order`);
+          return prev;
+        }
         return prev.map((i) =>
           i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
         );
@@ -90,7 +111,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       prev
         .map((item) => {
           if (item.id === id) {
-            const newQty = item.quantity + delta;
+            const newQty = Math.min(MAX_ITEM_QUANTITY, item.quantity + delta);
             return newQty > 0 ? { ...item, quantity: newQty } : null;
           }
           return item;

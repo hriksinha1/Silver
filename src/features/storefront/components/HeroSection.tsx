@@ -39,12 +39,12 @@ export function HeroSection({ cartTriggerRef }: HeroSectionProps) {
 
   // Hero Buy Now handler
   const handleBuyNow = () => {
-    // Adds Gold Statement Ring (demo price $299) and opens cart dialog
+    // Adds the featured ring and opens the bag.
     addToCart(
       {
         id: 'gold-statement-ring',
         name: 'Gold Statement Ring',
-        price: 299, // Demonstration price
+        price: 29900,
         image: IMAGES.heroRingBox.src,
         subtitle: 'Luxury Edition handcrafted 18k gold band',
       },

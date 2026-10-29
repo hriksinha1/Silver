@@ -3,6 +3,7 @@ import SafeImage from '@/shared/ui/SafeImage';
 import { PlusIcon } from '@/shared/ui/icons';
 import { useCart } from '@/features/cart/context/CartContext';
 import { PRODUCTS } from '@/features/storefront/data/catalog';
+import { formatINR } from '@/shared/lib/money';
 
 export function BestSellersSection() {
   const { addToCart, highlightedProductId } = useCart();
@@ -71,7 +72,7 @@ export function BestSellersSection() {
 
                   <div className="mt-3 flex items-center justify-between">
                     <span className="font-sans text-sm sm:text-base font-semibold tabular-nums text-[#26102C]">
-                      ${prod.price}
+                      {formatINR(prod.price)}
                     </span>
 
                     <button
