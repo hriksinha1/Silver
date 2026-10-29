@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { randomInt, createTransport } from 'nodemailer';
+import { createTransport } from 'nodemailer';
 import { z } from 'zod';
 import { collections } from '../db.js';
 import { consumeRateLimit, createOpaqueToken, createOtp, hashToken, otpDigest, safeEqualHex } from '../security.js';

@@ -36,6 +36,7 @@ async function ensureIndexes(db) {
       { reservationExpiresAt: 1 },
       { partialFilterExpression: { status: 'pending_payment' } },
     ),
+    db.collection('webhookEvents').createIndex({ receivedAt: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 180 }),
   ]);
 }
 
@@ -48,6 +49,7 @@ export function collections() {
     rateLimits: database.collection('rateLimits'),
     products: database.collection('products'),
     orders: database.collection('orders'),
+    webhookEvents: database.collection('webhookEvents'),
   };
 }
 
