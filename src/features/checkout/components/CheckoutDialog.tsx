@@ -466,7 +466,8 @@ export default function CheckoutDialog({
                 <strong>{formatINR(subtotalEstimate)}</strong>
               </div>
               <p className="text-xs leading-relaxed text-[#706977]">
-                Final prices are checked by the store when you place the order.
+                This total currently reflects catalogue prices only. Configure applicable
+                taxes and shipping rules before accepting live orders.
               </p>
               <Button type="submit" disabled={busy || cart.length === 0} className="w-full py-3">
                 {busy ? 'Processing…' : paymentMethod === 'cod' ? 'Place order' : 'Continue to secure payment'}

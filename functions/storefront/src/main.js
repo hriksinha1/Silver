@@ -170,6 +170,7 @@ async function createRazorpayOrder(amountInPaise, requestId, userId) {
       receipt: requestId,
       notes: { silveram_order_id: requestId, appwrite_user_id: userId },
     }),
+    signal: AbortSignal.timeout(10000),
   });
 
   if (!response.ok) {
@@ -290,7 +291,10 @@ async function createOrder(body, res, log, user) {
     return res.json(orderResponse(order, razorpay.keyId));
   } catch (error) {
     log(`Order creation failed (${error?.code ?? 'provider'}).`);
-    return jsonError(res, 503, error.message || 'We could not create your order. Please try again.');
+    const publicMessage = error.message?.startsWith('Online payments are not configured')
+      ? error.message
+      : 'We could not create your order. Please try again.';
+    return jsonError(res, 503, publicMessage);
   }
 }
 
@@ -338,6 +342,7 @@ async function verifyPayment(body, res, log, user) {
       headers: {
         Authorization: `Basic ${Buffer.from(`${keyId}:${secret}`).toString('base64')}`,
       },
+      signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) {
       await response.text();

@@ -88,16 +88,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     item: { id: string; name: string; price: number; image?: string; subtitle?: string },
     openCartAfter = false
   ) => {
+    if (cart.find((current) => current.id === item.id)?.quantity >= MAX_ITEM_QUANTITY) {
+      const message = `Maximum ${MAX_ITEM_QUANTITY} of each item per order`;
+      setToastMessage(message);
+      setLiveAnnouncement(message);
+      return;
+    }
+
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
-        if (existing.quantity >= MAX_ITEM_QUANTITY) {
-          setToastMessage(`Maximum ${MAX_ITEM_QUANTITY} of each item per order`);
-          setLiveAnnouncement(`Maximum ${MAX_ITEM_QUANTITY} of each item per order`);
-          return prev;
-        }
         return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          i.id === item.id
+            ? { ...i, quantity: Math.min(MAX_ITEM_QUANTITY, i.quantity + 1) }
+            : i
         );
       }
       return [...prev, { ...item, quantity: 1 }];

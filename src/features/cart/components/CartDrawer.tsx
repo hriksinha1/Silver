@@ -136,6 +136,7 @@ export function CartDrawer({ triggerRef, onCheckout }: CartDrawerProps) {
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, 1)}
+                          disabled={item.quantity >= 10}
                           className="flex h-7 w-7 items-center justify-center text-[#4E4852] hover:bg-[#F5F2F7] hover:text-[#26102C]"
                           aria-label={`Increase quantity of ${item.name}`}
                         >
@@ -169,7 +170,7 @@ export function CartDrawer({ triggerRef, onCheckout }: CartDrawerProps) {
             </div>
 
             <p className="mb-4 text-xs leading-relaxed text-[#4E4852]">
-              Shipping and applicable taxes are confirmed at checkout.
+              Final totals are checked by Silveram when you place your order.
             </p>
 
             <Button
