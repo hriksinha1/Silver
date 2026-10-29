@@ -18,16 +18,15 @@ The project identifiers you shared are configured locally in the ignored `.env.l
 
 The repository includes an idempotent provisioning script. It creates database `silveram-store`, the private `orders` collection, a `products` collection, and the `product-images` storage bucket. It uploads the five existing product photos and creates matching starter product records. Starter product records are deliberately **inactive and have zero stock**, so sample products cannot be sold accidentally.
 
-Create a short-lived Appwrite server API key with `databases.read`, `databases.write`, `storage.read`, and `storage.write` scopes. From PowerShell, set the key locally (do not commit it, place it in a frontend env variable, or share it in chat) and run:
+Create a short-lived Appwrite server API key with `databases.read`, `databases.write`, `storage.read`, and `storage.write` scopes. From the repository root, run the secure-prompt helper. It keeps the key out of command history and removes it from the process environment after provisioning:
 
 ```powershell
-$env:APPWRITE_ENDPOINT = "https://sgp.cloud.appwrite.io/v1"
-$env:APPWRITE_PROJECT_ID = "6ae2df98002eb5a1a39b"
-$env:APPWRITE_API_KEY = "<server-api-key>"
-npm run provision:database --prefix functions\storefront
+.\functions\storefront\scripts\provision-appwrite.ps1
 ```
 
-The script waits for all attributes to become available, uploads images with public-read-only permissions, and adds product records with individual public-read permissions. Collections and the bucket do not have broad permissions. It will not overwrite existing product records or accept an existing collection/bucket with unsafe permissions. The script prints the resource IDs for Function configuration. No API key has been provided to this environment, so remote resources have **not** yet been created.
+Enter the key when PowerShell prompts; it is not shown as you type. If local execution policy blocks this script, run `powershell -NoProfile -ExecutionPolicy Bypass -File .\functions\storefront\scripts\provision-appwrite.ps1` from the repository root.
+
+The script waits for all attributes to become available, uploads images with public-read-only permissions, and adds product records with individual public-read permissions. Collections and the bucket do not have broad permissions. It will not overwrite existing product records or accept an existing collection/bucket with unsafe permissions. It prints resource IDs for Function configuration. No API key has been provided to this environment, so remote resources have **not** yet been created.
 
 ### `orders` collection
 
