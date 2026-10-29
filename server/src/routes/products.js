@@ -17,7 +17,8 @@ const productSchema = z.object({
 }).strict();
 
 function serializeProduct(product) {
-  return { ...product, id: product._id.toString(), _id: undefined };
+  const { _id, ...fields } = product;
+  return { ...fields, id: _id.toString() };
 }
 
 export function createProductsRouter(config) {

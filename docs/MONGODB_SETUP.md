@@ -4,8 +4,6 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 
 ## Status and launch gates
 
-- The previous Appwrite project `Silver` was deleted at the user's request. Its database, storage, and all other resources are permanently removed.
-- Appwrite packages, configuration, client references, provisioning scripts, and Function code were removed from the repository.
 - MongoDB code and configuration templates are in place, but no Atlas account credentials or SMTP/payment secrets were provided. Atlas cluster creation and a real end-to-end purchase cannot be completed without access to those accounts.
 - Checkout is off by default (`STORE_LIVE_CHECKOUT=false` and `VITE_CHECKOUT_ENABLED=false`). Do not enable production checkout until this guide's launch checklist is complete.
 - The sample catalog is seeded as inactive with zero inventory. Replace sample details and explicitly set actual inventory before listing anything for sale.

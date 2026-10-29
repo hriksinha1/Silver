@@ -69,6 +69,9 @@ async function reserveOrder(config, input, user) {
         if (!sameOrder(existing, user.id, input.paymentMethod, requested, input.customer)) {
           throw Object.assign(new Error('This order request is no longer available.'), { status: 409 });
         }
+        if (['expired', 'cancelled', 'refunded', 'payment_review'].includes(existing.status)) {
+          throw Object.assign(new Error('This order can no longer be paid. Please contact the store.'), { status: 409 });
+        }
         order = existing;
         return;
       }
@@ -132,6 +135,9 @@ async function reserveOrder(config, input, user) {
     if (error?.code === 11000) {
       const existing = await orders.findOne({ _id: input.requestId });
       if (existing && sameOrder(existing, user.id, input.paymentMethod, requested, input.customer)) {
+        if (['expired', 'cancelled', 'refunded', 'payment_review'].includes(existing.status)) {
+          throw Object.assign(new Error('This order can no longer be paid. Please contact the store.'), { status: 409 });
+        }
         order = existing;
       } else {
         throw Object.assign(new Error('This order request is no longer available.'), { status: 409 });
@@ -166,10 +172,13 @@ async function reserveOrder(config, input, user) {
   if (razorpayOrder.amount !== order.amountInPaise || razorpayOrder.currency !== 'INR' || !razorpayOrder.id) {
     throw Object.assign(new Error('The payment provider returned an invalid order.'), { status: 503 });
   }
-  await orders.updateOne(
+  const updated = await orders.updateOne(
     { _id: order._id, status: 'pending_payment', reservationExpiresAt: { $gt: new Date() } },
     { $set: { razorpayOrderId: razorpayOrder.id, updatedAt: new Date() } },
   );
+  if (!updated.modifiedCount) {
+    throw Object.assign(new Error('Your payment reservation expired. Please start checkout again.'), { status: 409 });
+  }
   order.razorpayOrderId = razorpayOrder.id;
   return order;
 }

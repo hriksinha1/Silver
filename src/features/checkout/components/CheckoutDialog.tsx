@@ -20,6 +20,7 @@ interface OrderResponse {
   amountInPaise: number;
   currency: 'INR';
   paymentMethod: PaymentMethod;
+  status: string;
   razorpayOrderId?: string;
   razorpayKeyId?: string;
 }
@@ -229,7 +230,7 @@ export default function CheckoutDialog({
         },
       );
 
-      if (paymentMethod === 'cod') {
+      if (order.status === 'placed_cod' || order.status === 'paid') {
         setPlacedOrder(order);
         setStep('complete');
         onOrderComplete();

@@ -30,7 +30,7 @@ export function createWebhookRouter(config) {
       const event = JSON.parse(req.body.toString('utf8'));
       const payment = event.payload?.payment?.entity;
       if (payment?.order_id && event.event === 'payment.captured') {
-        await orders.updateOne(
+        const result = await orders.updateOne(
           {
             razorpayOrderId: payment.order_id,
             status: 'pending_payment',
@@ -39,6 +39,18 @@ export function createWebhookRouter(config) {
           },
           { $set: { status: 'paid', razorpayPaymentId: payment.id, updatedAt: new Date() } },
         );
+        if (!result.matchedCount) {
+          await orders.updateOne(
+            { razorpayOrderId: payment.order_id, status: 'expired' },
+            {
+              $set: {
+                status: 'payment_review',
+                razorpayPaymentId: payment.id,
+                updatedAt: new Date(),
+              },
+            },
+          );
+        }
       } else if (payment?.order_id && event.event === 'payment.refunded') {
         await orders.updateOne(
           { razorpayOrderId: payment.order_id, status: 'paid' },
