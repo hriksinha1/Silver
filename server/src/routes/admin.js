@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { collections } from '../db.js';
+import { collections, mongoClient } from '../db.js';
 import { requireAdmin, requireUser } from '../middleware.js';
 
 const orderStatuses = new Set(['fulfilled']);
@@ -41,6 +41,46 @@ export function createAdminRouter(config) {
       return res.json({ order: result });
     } catch (error) {
       next(error);
+    }
+  });
+
+  router.post('/orders/:id/cancel', async (req, res, next) => {
+    const session = mongoClient().startSession();
+    try {
+      let cancelledOrder;
+      await session.withTransaction(async () => {
+        cancelledOrder = await collections().orders.findOneAndUpdate(
+          { _id: req.params.id, status: 'placed_cod' },
+          { $set: { status: 'cancelled', updatedAt: new Date() } },
+          { session, returnDocument: 'before' },
+        );
+        if (!cancelledOrder) return;
+        for (const line of cancelledOrder.items) {
+          await collections().products.updateOne(
+            { _id: line.productId },
+            { $inc: { stockQuantity: line.quantity }, $set: { updatedAt: new Date() } },
+            { session },
+          );
+        }
+        await collections().orders.updateOne(
+          { _id: req.params.id, status: 'cancelled' },
+          { $set: { cancellationRecordedAt: new Date() } },
+          { session },
+        );
+      });
+      if (!cancelledOrder) {
+        const order = await collections().orders.findOne(
+          { _id: req.params.id },
+          { projection: { status: 1 } },
+        );
+        if (!order) return res.status(404).json({ error: 'Order not found.' });
+        return res.status(409).json({ error: 'Only unfulfilled cash-on-delivery orders can be cancelled this way.' });
+      }
+      return res.json({ success: true, orderId: cancelledOrder._id });
+    } catch (error) {
+      next(error);
+    } finally {
+      await session.endSession();
     }
   });
 

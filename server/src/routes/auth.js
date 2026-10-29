@@ -95,6 +95,9 @@ export function createAuthRouter(config) {
 
   router.post('/verify', async (req, res, next) => {
     try {
+      if (!(await consumeRateLimit(req.ip, 'otp-verify-ip', 30, 60 * 60 * 1000))) {
+        return res.status(429).json({ error: 'Too many verification attempts. Please try again later.' });
+      }
       const parsed = verifySchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ error: 'Enter your email and the six-digit code.' });
       const { email, code, name } = parsed.data;

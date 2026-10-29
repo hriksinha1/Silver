@@ -161,7 +161,7 @@ export default function CheckoutDialog({
       });
       setEmail(normalizedEmail);
       setStep('code');
-      setResendSeconds(resend ? 60 : 30);
+      setResendSeconds(60);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to send your email code.');
     } finally {
