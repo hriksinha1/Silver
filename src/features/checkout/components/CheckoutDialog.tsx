@@ -97,22 +97,46 @@ export default function CheckoutDialog({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const requestIdRef = useRef(ID.unique());
+  const busyRef = useRef(busy);
+  const onCloseRef = useRef(onClose);
+  busyRef.current = busy;
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement;
     document.body.style.overflow = 'hidden';
     const timer = window.setTimeout(() => closeButtonRef.current?.focus(), 50);
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onClose();
+      if (event.key === 'Escape' && !busyRef.current) {
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       window.clearTimeout(timer);
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
     };
-  }, [busy, isOpen, onClose]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || resendSeconds <= 0) return;
@@ -480,7 +504,7 @@ export default function CheckoutDialog({
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#F5F2F7] text-2xl text-[#69388F]" aria-hidden="true">✓</div>
               <h3 className="font-heading text-2xl font-medium">Thank you, {fullName}.</h3>
               <p className="text-sm leading-relaxed text-[#4E4852]">
-                Your order has been received. A confirmation will be sent to {email}.
+                Your order has been received. Save this reference for your records.
               </p>
               <p className="rounded-[2px] bg-[#FAF8FB] px-4 py-3 text-xs">
                 Order reference <strong className="font-mono">{placedOrder.orderId}</strong>

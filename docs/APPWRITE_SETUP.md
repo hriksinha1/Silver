@@ -70,7 +70,7 @@ Only these public project identifiers belong in the frontend. Redeploy the front
 
 - Replace the sample product catalog and prices in both `src/features/storefront/data/catalog.ts` and `functions/storefront/src/main.js`. The Function catalog is authoritative. Add stock reservation and refund reconciliation before promising inventory.
 - Confirm GST treatment, invoices, shipping charges/eligibility, delivery coverage, COD availability, cancellation/return/refund rules, and the legal/privacy text for the actual business. The current storefront content is not legal advice or a substitute for approved policies.
-- Add a real order confirmation email, fulfillment/admin workflow, shipping tracking, and operational monitoring.
+- Add a real order confirmation email, fulfillment/admin workflow, shipping tracking, and operational monitoring. The current UI only displays the order reference; it does not send an order confirmation email.
 - Test signup, returning-user OTP, invalid/expired code, rate limits, COD, payment cancellation, duplicate submit, failed payment, successful captured payment, and browser-close recovery in a staging project.
 - Set Appwrite and Razorpay usage alerts, restrict the deployed Function API key to the listed scopes, rotate secrets if exposed, and verify database backups/retention. Free-tier quotas and availability are not a production SLA.
 

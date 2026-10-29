@@ -32,9 +32,17 @@ function getAdminClient() {
 }
 
 function readBody(req) {
-  if (req.bodyJson && typeof req.bodyJson === 'object') return req.bodyJson;
-  if (typeof req.body === 'string') return JSON.parse(req.body);
-  if (typeof req.bodyText === 'string') return JSON.parse(req.bodyText);
+  if (req.bodyJson && typeof req.bodyJson === 'object' && !Array.isArray(req.bodyJson)) {
+    return req.bodyJson;
+  }
+  if (typeof req.body === 'string') {
+    const body = JSON.parse(req.body);
+    return body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+  }
+  if (typeof req.bodyText === 'string') {
+    const body = JSON.parse(req.bodyText);
+    return body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+  }
   return {};
 }
 
