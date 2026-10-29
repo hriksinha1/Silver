@@ -1,4 +1,4 @@
-import { Account, Client, Functions } from 'appwrite';
+import { Account, Client, ExecutionMethod, Functions } from 'appwrite';
 
 const endpoint = import.meta.env.VITE_APPWRITE_ENDPOINT;
 const projectId = import.meta.env.VITE_APPWRITE_PROJECT_ID;
@@ -15,11 +15,7 @@ if (endpoint && projectId) {
 export const account = new Account(client);
 const functions = new Functions(client);
 
-export interface StoreResponse {
-  [key: string]: unknown;
-}
-
-export async function callStoreFunction<T extends StoreResponse>(
+export async function callStoreFunction<T>(
   path: string,
   payload: Record<string, unknown>,
   authenticated = false
@@ -39,7 +35,7 @@ export async function callStoreFunction<T extends StoreResponse>(
     JSON.stringify(payload),
     false,
     path,
-    'POST',
+    ExecutionMethod.POST,
     headers
   );
 
