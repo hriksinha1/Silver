@@ -2,12 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import { useCart } from '@/features/cart/context/CartContext';
 import { CloseIcon, PlusIcon, MinusIcon, CartIcon } from '@/shared/ui/icons';
 import Button from '@/shared/ui/Button';
+import { formatINR } from '@/shared/lib/money';
 
 interface CartDrawerProps {
   triggerRef?: React.RefObject<HTMLButtonElement | null>;
+  onCheckout: () => void;
 }
 
-export function CartDrawer({ triggerRef }: CartDrawerProps) {
+export function CartDrawer({ triggerRef, onCheckout }: CartDrawerProps) {
   const { cart, isCartOpen, setIsCartOpen, updateQuantity, removeItem } = useCart();
   const drawerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -111,7 +113,7 @@ export function CartDrawer({ triggerRef }: CartDrawerProps) {
                       <div className="flex items-start justify-between">
                         <h3 className="font-heading text-base font-medium text-[#26102C]">{item.name}</h3>
                         <span className="font-sans text-sm font-semibold tabular-nums text-[#26102C]">
-                          ${item.price * item.quantity}
+                          {formatINR(item.price * item.quantity)}
                         </span>
                       </div>
                       {item.subtitle && (
@@ -162,7 +164,7 @@ export function CartDrawer({ triggerRef }: CartDrawerProps) {
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium text-[#4E4852]">Subtotal</span>
               <span className="font-heading text-xl font-bold tabular-nums text-[#26102C]">
-                ${subtotal.toLocaleString()}
+                {formatINR(subtotal)}
               </span>
             </div>
 
@@ -173,18 +175,10 @@ export function CartDrawer({ triggerRef }: CartDrawerProps) {
             <Button
               variant="primary"
               className="w-full py-3 text-sm tracking-wide"
-              onClick={() => {
-                // Checkout is disabled in demonstration
-              }}
+              onClick={onCheckout}
             >
               Proceed to Checkout
             </Button>
-
-            <div className="mt-3 rounded-[2px] bg-[#EFEFEF] p-2.5 text-center">
-              <p className="text-xs text-[#4E4852]">
-                <strong>Notice:</strong> This is a demonstration. Checkout is not available.
-              </p>
-            </div>
           </div>
         )}
       </div>

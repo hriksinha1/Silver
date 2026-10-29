@@ -19,15 +19,19 @@ import HeroSection from '@/features/storefront/components/HeroSection';
 import TestimonialsSection from '@/features/storefront/components/TestimonialsSection';
 import WhyChooseSection from '@/features/storefront/components/WhyChooseSection';
 import Toast from '@/shared/ui/Toast';
+import CheckoutDialog from '@/features/checkout/components/CheckoutDialog';
+import { useCart } from '@/features/cart/context/CartContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function App() {
+function Storefront() {
   const [isPolicyOpen, setIsPolicyOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [policyTitle, setPolicyTitle] = useState('Privacy Policy');
   const [activeFaqId, setActiveFaqId] = useState<string | null>(null);
   const cartTriggerRef = useRef<HTMLButtonElement | null>(null);
   const surfaceRef = useRef<HTMLDivElement>(null);
+  const { cart, clearCart, setIsCartOpen } = useCart();
 
   // GSAP ScrollTrigger for restrained section reveals
   useEffect(() => {
@@ -132,7 +136,20 @@ export default function App() {
       </div>
 
       {/* Cart Slide-Over Drawer */}
-      <CartDrawer triggerRef={cartTriggerRef} />
+      <CartDrawer
+        triggerRef={cartTriggerRef}
+        onCheckout={() => {
+          setIsCartOpen(false);
+          setIsCheckoutOpen(true);
+        }}
+      />
+
+      <CheckoutDialog
+        isOpen={isCheckoutOpen}
+        cart={cart}
+        onClose={() => setIsCheckoutOpen(false)}
+        onOrderComplete={clearCart}
+      />
 
       {/* Policy Modal Dialog */}
       <PolicyModal
@@ -143,6 +160,14 @@ export default function App() {
 
       {/* Toast and Live Region */}
       <Toast />
+    </CartProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <CartProvider>
+      <Storefront />
     </CartProvider>
   );
 }
