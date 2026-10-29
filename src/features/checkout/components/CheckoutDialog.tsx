@@ -145,7 +145,7 @@ export default function CheckoutDialog({
 
   if (!isOpen) return null;
 
-  const startEmailVerification = async (resend = false) => {
+  const startEmailVerification = async () => {
     const normalizedEmail = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       setError('Enter a valid email address.');
@@ -436,7 +436,7 @@ export default function CheckoutDialog({
               <button
                 type="button"
                 disabled={busy || resendSeconds > 0}
-                onClick={() => void startEmailVerification(true)}
+                onClick={() => void startEmailVerification()}
                 className="w-full text-center text-xs text-[#69388F] underline underline-offset-2 disabled:text-[#8D8792]"
               >
                 {resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : 'Resend code'}
