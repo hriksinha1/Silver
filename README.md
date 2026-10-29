@@ -31,26 +31,25 @@ Feature-specific code belongs in its feature folder. Reusable UI and static reso
 
 ```bash
 npm install
+npm --prefix server install
 npm run dev
+npm run dev:server
 npm run lint
 npm run build
 npm run preview
 ```
 
+Copy `server/.env.example` to `server/.env` and configure the local MongoDB URI and random secrets before starting the API. Never commit `server/.env`.
+
 `npm run build` type-checks the project before creating the production bundle in `dist/`.
 
 ## Storefront and backend status
 
-The storefront includes a checkout interface and an Appwrite Function integration for six-digit email OTP, order creation, and Razorpay verification. Appwrite's free plan uses TablesDB Serverless for the `products` and `orders` tables. Checkout is intentionally disabled until the Function is deployed and the remaining production controls are implemented and tested.
+The checkout calls a separate Node.js API backed by MongoDB. Email OTP, secure cookie sessions, server-priced orders, transactional inventory reservations, Razorpay verification, webhook reconciliation, and allowlisted admin CRUD live in `server/`.
 
-The backend resource map, authentication/permissions model, product CRUD workflow, provisioning steps, schema, Function configuration, and production blockers are documented in [docs/APPWRITE_SETUP.md](./docs/APPWRITE_SETUP.md).
+The database structure, Atlas setup, collections/indexes, admin operations, API routes, secrets, and launch checklist are documented in [docs/MONGODB_SETUP.md](./docs/MONGODB_SETUP.md).
 
-Important launch constraints:
-
-- The Appwrite product table is authoritative for server-side prices and availability. Keep its rows aligned with the presentation catalog in `src/features/storefront/data/catalog.ts`.
-- Product and order changes are not public CRUD operations. Use Appwrite Console or a trusted server-side tool with a restricted API key; never put API keys or payment secrets in frontend code or `VITE_*` variables.
-- Inventory is checked but not atomically reserved, so concurrent orders may oversell. Do not enable live checkout until reservations, payment reconciliation, policies, and operational processes are complete.
-- Newsletter signup, testimonials, product copy, policy text, contact details, stock, and prices still require real business data and review.
+Checkout remains deliberately disabled until Atlas, a verified SMTP sender, the admin allowlist, Razorpay credentials/webhook, production origins, and approved business policies are configured and tested. Keep secrets in `server/.env` locally and in your host's secret manager in production.
 
 ## Assets
 
@@ -63,3 +62,4 @@ The app can be deployed as a static Vite site. Use:
 - Build command: `npm run build`
 - Output directory: `dist`
 - Node.js: `^20.19.0` or `>=22.12.0`
+- The API in `server/` must also be deployed as a long-running Node.js service and routed at `/api`.

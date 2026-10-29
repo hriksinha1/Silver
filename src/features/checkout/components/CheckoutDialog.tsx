@@ -213,20 +213,20 @@ export default function CheckoutDialog({
         {
           method: 'POST',
           body: JSON.stringify({
-          requestId: requestIdRef.current,
-          paymentMethod,
-          customer: {
-            name: fullName.trim(),
-            phone: phone.replace(/\D/g, ''),
-            address: address.trim(),
-            city: city.trim(),
-            state: state.trim(),
-            postalCode: postalCode.trim(),
-            country: 'IN',
-          },
-          items: cart.map(({ id, quantity }) => ({ id, quantity })),
+            requestId: requestIdRef.current,
+            paymentMethod,
+            customer: {
+              name: fullName.trim(),
+              phone: phone.replace(/\D/g, ''),
+              address: address.trim(),
+              city: city.trim(),
+              state: state.trim(),
+              postalCode: postalCode.trim(),
+              country: 'IN',
+            },
+            items: cart.map(({ id, quantity }) => ({ id, quantity })),
           }),
-        }
+        },
       );
 
       if (paymentMethod === 'cod') {
@@ -293,7 +293,7 @@ export default function CheckoutDialog({
       setState('');
       setPostalCode('');
       setPlacedOrder(null);
-      requestIdRef.current = ID.unique();
+      requestIdRef.current = crypto.randomUUID();
     }
     setError('');
     onClose();

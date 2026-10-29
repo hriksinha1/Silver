@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { collections } from '../db.js';
 import { requireAdmin, requireUser } from '../middleware.js';
 
-const orderStatuses = new Set(['placed_cod', 'paid', 'fulfilled', 'cancelled', 'refunded']);
+const orderStatuses = new Set(['fulfilled']);
 
 export function createAdminRouter(config) {
   const router = Router();
@@ -29,11 +29,15 @@ export function createAdminRouter(config) {
         return res.status(400).json({ error: 'Choose a supported order status.' });
       }
       const result = await collections().orders.findOneAndUpdate(
-        { _id: req.params.id },
+        { _id: req.params.id, status: { $in: ['placed_cod', 'paid'] } },
         { $set: { status: parsed.data.status, updatedAt: new Date() } },
         { returnDocument: 'after' },
       );
-      if (!result) return res.status(404).json({ error: 'Order not found.' });
+      if (!result) {
+        const order = await collections().orders.findOne({ _id: req.params.id }, { projection: { _id: 1 } });
+        if (!order) return res.status(404).json({ error: 'Order not found.' });
+        return res.status(409).json({ error: 'Only placed or paid orders can be marked fulfilled.' });
+      }
       return res.json({ order: result });
     } catch (error) {
       next(error);
