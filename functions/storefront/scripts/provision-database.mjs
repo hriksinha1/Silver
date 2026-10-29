@@ -36,6 +36,28 @@ const productColumns = [
   { key: 'imageFileId', type: 'varchar', size: 36 },
 ];
 
+const tableIndexes = [
+  {
+    tableId: productsTableId,
+    key: 'sku_unique',
+    type: 'unique',
+    columns: ['sku'],
+  },
+  {
+    tableId: productsTableId,
+    key: 'active_category',
+    type: 'key',
+    columns: ['active', 'category'],
+  },
+  {
+    tableId: ordersTableId,
+    key: 'user_created',
+    type: 'key',
+    columns: ['userId', 'createdAt'],
+    orders: ['ASC', 'DESC'],
+  },
+];
+
 const starterProducts = [
   {
     id: 'product-celeste-diamond-ring',
@@ -200,6 +222,58 @@ async function ensureColumns(tablesDB, tableId, columns) {
   throw new Error(`Timed out waiting for Appwrite to finish creating columns in ${tableId}.`);
 }
 
+async function ensureIndexes(tablesDB) {
+  for (const definition of tableIndexes) {
+    const result = await tablesDB.listIndexes(databaseId, definition.tableId);
+    const existing = result.indexes.find((index) => index.key === definition.key);
+    if (existing) {
+      const matches =
+        existing.type === definition.type &&
+        JSON.stringify(existing.columns) === JSON.stringify(definition.columns) &&
+        (!definition.orders ||
+          JSON.stringify(existing.orders) === JSON.stringify(definition.orders));
+      if (!matches) {
+        throw new Error(
+          `Existing index "${definition.tableId}.${definition.key}" does not match the required schema.`
+        );
+      }
+      continue;
+    }
+
+    await tablesDB.createIndex(
+      databaseId,
+      definition.tableId,
+      definition.key,
+      definition.type,
+      definition.columns,
+      definition.orders
+    );
+    console.log(`Created index: ${definition.tableId}.${definition.key}`);
+  }
+
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const results = await Promise.all(
+      tableIndexes.map(async (definition) => {
+        const result = await tablesDB.listIndexes(databaseId, definition.tableId);
+        return { definition, index: result.indexes.find((item) => item.key === definition.key) };
+      })
+    );
+    const failed = results.find(({ index }) => index?.status === 'failed' || index?.status === 'stuck');
+    if (failed) {
+      throw new Error(
+        `Appwrite could not create index "${failed.definition.tableId}.${failed.definition.key}": ${failed.index.error || failed.index.status}`
+      );
+    }
+    if (results.every(({ index }) => index?.status === 'available')) {
+      console.log('All database indexes are available.');
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  throw new Error('Timed out waiting for Appwrite to finish creating database indexes.');
+}
+
 async function ensureProductImagesBucket(storage) {
   try {
     const bucket = await storage.getBucket(productImagesBucketId);
@@ -311,6 +385,7 @@ async function main() {
   await ensureTable(tablesDB, productsTableId, 'Products');
   await ensureColumns(tablesDB, ordersTableId, orderColumns);
   await ensureColumns(tablesDB, productsTableId, productColumns);
+  await ensureIndexes(tablesDB);
   await ensureProductImagesBucket(storage);
   await ensureStarterProducts(tablesDB, storage);
 
