@@ -11,7 +11,16 @@ The storefront is configured for India (INR), Appwrite's native six-digit email 
 
 ## 2. Create the orders database
 
-Create a database and an `orders` collection. Use these IDs in the Function environment variables.
+The repository includes an idempotent provisioning script for the database and private `orders` collection. From PowerShell, set local environment variables (do not commit or share the API key) and run it:
+
+```powershell
+$env:APPWRITE_ENDPOINT = "https://<your-region>.cloud.appwrite.io/v1"
+$env:APPWRITE_PROJECT_ID = "<your-project-id>"
+$env:APPWRITE_API_KEY = "<server-api-key>"
+npm run provision:database --prefix functions\storefront
+```
+
+The script creates the `silveram-store` database and `orders` collection, then waits for all required attributes to become available. It refuses to modify an existing collection if its permissions or schema do not match. The API key needs `databases.read` and `databases.write`; do not paste it into chat or commit it. The script prints the resource IDs for Function configuration.
 
 | Attribute | Type | Required | Size / notes |
 |---|---|---:|---|

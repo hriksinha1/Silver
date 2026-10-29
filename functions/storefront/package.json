@@ -3,6 +3,9 @@
   "private": true,
   "type": "module",
   "main": "src/main.js",
+  "scripts": {
+    "provision:database": "node scripts/provision-database.mjs"
+  },
   "engines": {
     "node": ">=20"
   },
