@@ -158,7 +158,6 @@ export default function CheckoutDialog({
     try {
       const result = await callStoreFunction<{ userId: string }>('/auth/start', {
         email: normalizedEmail,
-        name: fullName.trim(),
       });
       if (!result.userId) throw new Error('Unable to start email verification.');
       setEmail(normalizedEmail);

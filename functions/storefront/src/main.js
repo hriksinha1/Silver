@@ -69,22 +69,23 @@ async function beginEmailOtp(body, res, log) {
   const users = new Users(client);
   const auth = new Account(new Client().setEndpoint(endpoint).setProject(projectId));
   let userId;
+  let token;
 
   try {
     const matches = await users.list([Query.equal('email', email), Query.limit(1)]);
     userId = matches.users[0]?.$id ?? ID.unique();
 
     try {
-      await auth.createEmailToken(userId, email);
+      token = await auth.createEmailToken(userId, email);
     } catch (error) {
       if (matches.users.length || error?.code !== 409) throw error;
       const retry = await users.list([Query.equal('email', email), Query.limit(1)]);
       if (!retry.users[0]) throw error;
       userId = retry.users[0].$id;
-      await auth.createEmailToken(userId, email);
+      token = await auth.createEmailToken(userId, email);
     }
 
-    return res.json({ userId });
+    return res.json({ userId: token.userId || userId });
   } catch (error) {
     log(`Email OTP start failed (${error?.code ?? 'unknown'}).`);
     const status = error?.code === 429 ? 429 : 503;
