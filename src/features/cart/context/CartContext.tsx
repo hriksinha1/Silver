@@ -88,7 +88,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     item: { id: string; name: string; price: number; image?: string; subtitle?: string },
     openCartAfter = false
   ) => {
-    if (cart.find((current) => current.id === item.id)?.quantity >= MAX_ITEM_QUANTITY) {
+    const existingItem = cart.find((current) => current.id === item.id);
+    if (existingItem && existingItem.quantity >= MAX_ITEM_QUANTITY) {
       const message = `Maximum ${MAX_ITEM_QUANTITY} of each item per order`;
       setToastMessage(message);
       setLiveAnnouncement(message);
