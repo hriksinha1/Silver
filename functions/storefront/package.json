@@ -1,0 +1,12 @@
+{
+  "name": "silveram-storefront-function",
+  "private": true,
+  "type": "module",
+  "main": "src/main.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "node-appwrite": "^17.0.0"
+  }
+}

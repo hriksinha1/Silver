@@ -84,6 +84,7 @@ function Storefront() {
   }, []);
 
   return (
+    <>
       {/* Skip to Content for Keyboard Accessibility */}
       <a
         href="#main-content"
@@ -159,6 +160,7 @@ function Storefront() {
 
       {/* Toast and Live Region */}
       <Toast />
+    </>
   );
 }
 
