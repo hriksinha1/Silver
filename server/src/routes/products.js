@@ -4,17 +4,36 @@ import { z } from 'zod';
 import { collections } from '../db.js';
 import { requireAdmin, requireUser } from '../middleware.js';
 
-const productSchema = z.object({
-  sku: z.string().trim().min(1).max(64),
-  name: z.string().trim().min(1).max(160),
-  description: z.string().trim().max(4000),
-  category: z.enum(['ring', 'necklace', 'earring', 'bracelet']),
-  priceInPaise: z.number().int().positive().max(2147483647),
-  currency: z.literal('INR').default('INR'),
-  stockQuantity: z.number().int().min(0).max(2147483647),
-  imageUrl: z.string().trim().min(1).max(500).regex(/^\/images\/[A-Za-z0-9._/-]+$/),
-  active: z.boolean().default(false),
-}).strict();
+function createProductSchema(config) {
+  const imageUrl = z.string().trim().min(1).max(500).refine((value) => {
+    if (value.startsWith('/images/')) {
+      return value.slice('/images/'.length).split('/').every((segment) =>
+        /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(segment),
+      );
+    }
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' &&
+        !url.username &&
+        !url.password &&
+        config.productImageHosts.has(url.hostname.toLowerCase());
+    } catch {
+      return false;
+    }
+  });
+
+  return z.object({
+    sku: z.string().trim().min(1).max(64),
+    name: z.string().trim().min(1).max(160),
+    description: z.string().trim().max(4000),
+    category: z.enum(['ring', 'necklace', 'earring', 'bracelet']),
+    priceInPaise: z.number().int().positive().max(2147483647),
+    currency: z.literal('INR').default('INR'),
+    stockQuantity: z.number().int().min(0).max(2147483647),
+    imageUrl,
+    active: z.boolean().default(false),
+  }).strict();
+}
 
 function serializeProduct(product) {
   const { _id, ...fields } = product;
@@ -24,6 +43,7 @@ function serializeProduct(product) {
 export function createProductsRouter(config) {
   const router = Router();
   const { products } = collections();
+  const productSchema = createProductSchema(config);
 
   router.get('/', async (req, res, next) => {
     try {

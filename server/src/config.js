@@ -22,6 +22,10 @@ function secret(name) {
 
 export function loadConfig() {
   const nodeEnv = process.env.NODE_ENV || 'development';
+  const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS || (nodeEnv === 'production' ? 1 : 0));
+  if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0) {
+    throw new Error('TRUST_PROXY_HOPS must be a non-negative integer.');
+  }
   const origins = (process.env.FRONTEND_ORIGINS || 'http://localhost:3000,http://127.0.0.1:3000')
     .split(',')
     .map((origin) => origin.trim())
@@ -34,6 +38,7 @@ export function loadConfig() {
   return {
     nodeEnv,
     isProduction: nodeEnv === 'production',
+    trustProxyHops: trustProxyHops === 0 ? false : trustProxyHops,
     port: positiveInteger('PORT', 4000),
     mongoUri: required('MONGODB_URI'),
     mongoDbName: process.env.MONGODB_DB_NAME?.trim() || 'silveram',
@@ -44,6 +49,12 @@ export function loadConfig() {
       (process.env.ADMIN_EMAILS || '')
         .split(',')
         .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+    productImageHosts: new Set(
+      (process.env.PRODUCT_IMAGE_HOSTS || '')
+        .split(',')
+        .map((host) => host.trim().toLowerCase())
         .filter(Boolean),
     ),
     liveCheckout: process.env.STORE_LIVE_CHECKOUT === 'true',

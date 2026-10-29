@@ -69,7 +69,10 @@ async function reserveOrder(config, input, user) {
         if (!sameOrder(existing, user.id, input.paymentMethod, requested, input.customer)) {
           throw Object.assign(new Error('This order request is no longer available.'), { status: 409 });
         }
-        if (['expired', 'cancelled', 'refunded', 'payment_review'].includes(existing.status)) {
+        if (
+          ['expired', 'cancelled', 'refunded', 'fulfilled', 'payment_review'].includes(existing.status) ||
+          (existing.status === 'pending_payment' && existing.reservationExpiresAt <= new Date())
+        ) {
           throw Object.assign(new Error('This order can no longer be paid. Please contact the store.'), { status: 409 });
         }
         order = existing;
@@ -135,7 +138,10 @@ async function reserveOrder(config, input, user) {
     if (error?.code === 11000) {
       const existing = await orders.findOne({ _id: input.requestId });
       if (existing && sameOrder(existing, user.id, input.paymentMethod, requested, input.customer)) {
-        if (['expired', 'cancelled', 'refunded', 'payment_review'].includes(existing.status)) {
+        if (
+          ['expired', 'cancelled', 'refunded', 'fulfilled', 'payment_review'].includes(existing.status) ||
+          (existing.status === 'pending_payment' && existing.reservationExpiresAt <= new Date())
+        ) {
           throw Object.assign(new Error('This order can no longer be paid. Please contact the store.'), { status: 409 });
         }
         order = existing;

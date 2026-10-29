@@ -61,7 +61,7 @@ MongoDB stores image references, not image binaries. Current demo images are ser
 - Passwordless sign-up/sign-in uses a six-digit email code sent via the configured SMTP relay. Codes are HMAC-digested with `OTP_PEPPER`, expire after 10 minutes by default, permit at most five guesses, and are limited by hashed email and IP identity.
 - Successful verification creates a random opaque session token. Only its SHA-256 hash is stored in MongoDB. The browser receives it as an `HttpOnly`, `SameSite=Lax` cookie; production sets `Secure`. The API can revoke sessions by deleting their records.
 - Admin access is determined by the normalized `ADMIN_EMAILS` allowlist on the server, not by a client-supplied role. Only add trusted staff emails; remove access by removing the address and revoking existing sessions.
-- CORS allows only explicit `FRONTEND_ORIGINS`. Never use `*` with credentials. Set `NODE_ENV=production` in deployment; configure the correct trusted proxy count for your hosting platform before relying on IP-based rate limits.
+- CORS allows only explicit `FRONTEND_ORIGINS`. Never use `*` with credentials. Set `NODE_ENV=production` in deployment and set `TRUST_PROXY_HOPS` to the exact number of trusted ingress proxies; an incorrect value can make IP-based rate limits unreliable.
 - Helmet security headers, JSON body-size limits, Zod request validation, escaped/static product images, parameterized MongoDB queries, and server-side price calculation are used.
 - Do not expose MongoDB, SMTP, Razorpay, OTP, or session secrets as `VITE_*` variables. Do not grant the web client database credentials.
 
@@ -98,7 +98,7 @@ npm --prefix server run seed:catalog
 
 `POST /api/orders` creates an order only after verified login and an active item with sufficient stock. It decrements inventory and writes the order in a MongoDB transaction. For Razorpay, the decrement is a temporary reservation; a worker returns inventory for expired pending orders. COD orders permanently decrement inventory when placed. Razorpay callbacks are signature-checked and the payment must be captured through the provider API before `paid` is recorded. Signed webhooks provide reconciliation when a browser closes before its callback completes.
 
-Orders are intentionally not public CRUD. Customers can only read their own order list. Staff can read orders through `GET /api/admin/orders` and mark eligible orders fulfilled through `PATCH /api/admin/orders/:id/status`; order/payment history is not deleted through the API. Refunds, cancellation policies, and payment-side refunds require a separately audited business workflow.
+Orders are intentionally not public CRUD. Customers can only read their own order list. Staff can read orders through `GET /api/admin/orders`, mark eligible orders fulfilled through `PATCH /api/admin/orders/:id/status`, and cancel an unfulfilled COD order through `POST /api/admin/orders/:id/cancel`; that cancellation restores inventory in a transaction. Order/payment history is not deleted through the API. Refunds and payment-side cancellations require a separately audited business workflow.
 
 ## Run and deploy
 
@@ -116,7 +116,7 @@ Vite proxies `/api` to `http://127.0.0.1:4000`. The API's `/api/health` endpoint
 
 ### Production
 
-1. Deploy the Vite output and the `server/` Node.js API. Route `/api/*` to the API on the same origin when possible; otherwise set `VITE_API_BASE_URL` and exact `FRONTEND_ORIGINS` deliberately.
+1. Deploy the Vite output and the `server/` Node.js API. Route `/api/*` to the API on the same origin when possible; otherwise set `VITE_API_BASE_URL` and exact `FRONTEND_ORIGINS` deliberately. Set `PRODUCT_IMAGE_HOSTS` to a comma-separated allowlist of HTTPS CDN/storage hostnames used for product image URLs.
 2. Provide `server/.env.example` values through the host's secret manager. Set production `SESSION_SECRET`, `OTP_PEPPER`, `MONGODB_URI`, SMTP, admin allowlist, and `NODE_ENV=production`.
 3. Use HTTPS end-to-end. Set the correct trusted proxy count rather than trusting arbitrary forwarded IP headers.
 4. Configure Razorpay test credentials first and a webhook pointed at `/api/webhooks/razorpay`; store `RAZORPAY_WEBHOOK_SECRET` as a secret.

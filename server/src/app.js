@@ -11,7 +11,7 @@ import { createWebhookRouter } from './routes/webhooks.js';
 export function createApp(config) {
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', config.isProduction ? 1 : false);
+  app.set('trust proxy', config.trustProxyHops);
   app.use(helmet());
   app.use(cors({
     origin(origin, callback) {
