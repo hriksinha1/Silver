@@ -4,9 +4,13 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 
 ## Status and launch gates
 
-- MongoDB code and configuration templates are in place, but no Atlas account credentials or SMTP/payment secrets were provided. Atlas cluster creation and a real end-to-end purchase cannot be completed without access to those accounts.
+- Atlas project `Silveram` and the `silveram-dev` free cluster have been created in AWS Mumbai. The free tier provides shared compute and 512 MB storage, has no backups, and is for learning/testing—not production orders or a production SLA. No paid resources were created.
+- The `silveram_app` database user has only `readWrite` on the `silveram` database. The temporary broad-access bootstrap database user was removed. Atlas access is restricted to the current developer IP (`/32`); add only the API host's fixed egress IP when deploying.
+- `server/.env` is configured locally with the Atlas URI and separate random app secrets. It is Git-ignored and its Windows ACL grants access only to the current Windows user. Never copy it into chat, source control, or a frontend build; production must use the deployment secret manager.
+- The app connected successfully, its seven collections and indexes were provisioned, and five sample catalog records were seeded inactive with zero stock. Real product information and inventory are not configured.
+- SMTP, production admin allowlist, Razorpay, production origins, backups, and deployment settings remain unconfigured, so checkout stays disabled. A free cluster is not sufficient for the requested production-ready real-world workload.
 - Checkout is off by default (`STORE_LIVE_CHECKOUT=false` and `VITE_CHECKOUT_ENABLED=false`). Do not enable production checkout until this guide's launch checklist is complete.
-- The sample catalog is seeded as inactive with zero inventory. Replace sample details and explicitly set actual inventory before listing anything for sale.
+- Replace sample catalog details with verified product information and explicitly set actual inventory before listing anything for sale.
 
 ## Simple project structure
 
@@ -31,12 +35,12 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 
 ## Atlas setup
 
-1. In MongoDB Atlas, create a cluster in a region close to the API host. Choose a production tier and backup/retention plan appropriate for real orders; free/shared cluster availability and backup features are not a production SLA.
-2. Create a dedicated database user for this application. Use a strong generated password and the minimum database permissions needed for the `silveram` database. Do not use an Atlas organization owner account in the URI.
-3. Configure Atlas Network Access to allow only the production API host's fixed egress IPs (and your developer IP temporarily). Avoid `0.0.0.0/0` for production.
-4. Copy `server/.env.example` to `server/.env`. Add the Atlas connection URI, URL-encode special characters in the database password, and set `MONGODB_DB_NAME=silveram`.
-5. Generate separate cryptographically random `SESSION_SECRET` and `OTP_PEPPER` values of at least 32 bytes. Keep them out of source control, build variables exposed to the browser, issue trackers, and chat. Production deployments should read secrets from the host secret manager.
-6. Configure MongoDB TLS (Atlas defaults to TLS) and verify your API host can connect before enabling any checkout route.
+1. The existing `Silveram` project and `silveram-dev` free cluster are for development/staging only. Before real orders, choose and authorize a paid production tier with backups/retention and capacity appropriate for the business.
+2. Keep the application database user separate from Atlas console users. `silveram_app` currently has `readWrite` only on `silveram`; never use an Atlas organization owner or an all-databases admin in the API URI.
+3. Atlas currently allows only the developer machine's `/32` IP. When deploying, replace or supplement it with only the production API host's fixed egress IPs. Avoid `0.0.0.0/0`.
+4. The ignored local `server/.env` is already configured for development. Keep its file ACL restricted, never commit it, and do not overwrite it with the template. For another machine, provision credentials through its secret manager instead of copying this file.
+5. `SESSION_SECRET` and `OTP_PEPPER` are separate cryptographically random secrets of at least 32 bytes. Keep them out of source control, browser build variables, issue trackers, and chat.
+6. Configure MongoDB TLS (Atlas defaults to TLS) and verify the actual API host can connect before enabling any checkout route.
 
 For local development, create a local MongoDB instance or use an Atlas development cluster with an IP-restricted URI. Run the server from the repository root with `npm --prefix server run dev`.
 
@@ -88,11 +92,10 @@ Admin catalog routes require a live email-verified session and an `ADMIN_EMAILS`
 
 Public `GET /api/products` returns active products only. For manual, audited changes, trusted developers can use MongoDB Compass with their own least-privilege database account. Prefer the API for routine edits so schema validation and update timestamps are applied. Keep the product IDs/prices in the storefront presentation in sync; the order API always reads prices and stock from MongoDB, never from browser-submitted price fields.
 
-The seed script inserts sample catalog rows only if missing, with `active=false`, `stockQuantity=0`, and placeholder descriptions:
+The seed script inserts sample catalog rows only if missing, with `active=false`, `stockQuantity=0`, and placeholder descriptions. The current Atlas database has these rows already:
 
 ```powershell
-Copy-Item .\server\.env.example .\server\.env
-# Fill MongoDB connection details and secrets in server/.env, then:
+# Configure server/.env through a secure local process; do not overwrite an existing env file.
 npm --prefix server run seed:catalog
 ```
 
@@ -135,4 +138,4 @@ Vite proxies `/api` to `http://127.0.0.1:4000`. The API's `/api/health` endpoint
 - [ ] Order confirmation emails, support/fulfillment/tracking operations, monitoring, alerts, and incident/key rotation runbooks are in place.
 - [ ] Staging has passed signup/sign-in, OTP abuse cases, COD, successful/failed/cancelled payment, duplicate requests, webhook retry, order privacy, and full refund tests.
 
-The repository supplies an understandable backend foundation; it cannot provision an Atlas cluster, verify your mail/payment business accounts, choose tax/shipping/legal policy, or guarantee production availability without those account settings and real-world tests.
+The free Atlas cluster and code foundation are provisioned for development/testing, not production. Production still requires an authorized paid cluster and backup plan, verified mail/payment accounts, deployment/network settings, approved tax/shipping/legal policies, and real-world staging tests.

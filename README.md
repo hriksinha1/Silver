@@ -39,7 +39,7 @@ npm run build
 npm run preview
 ```
 
-Copy `server/.env.example` to `server/.env` and configure the local MongoDB URI and random secrets before starting the API. Never commit `server/.env`.
+`server/.env` is configured for the local Atlas development cluster. It is Git-ignored and ACL-restricted to the current Windows user; never commit, share, or overwrite it. For another environment, use that host's secret manager.
 
 `npm run build` type-checks the project before creating the production bundle in `dist/`.
 
@@ -49,7 +49,7 @@ The checkout calls a separate Node.js API backed by MongoDB. Email OTP, secure c
 
 The database structure, Atlas setup, collections/indexes, admin operations, API routes, secrets, and launch checklist are documented in [docs/MONGODB_SETUP.md](./docs/MONGODB_SETUP.md).
 
-Checkout remains deliberately disabled until Atlas, a verified SMTP sender, the admin allowlist, Razorpay credentials/webhook, production origins, and approved business policies are configured and tested. Keep secrets in `server/.env` locally and in your host's secret manager in production.
+The current Atlas free cluster is for development/testing only—not a production workload. Checkout remains deliberately disabled until a production-capable Atlas tier and backups, verified SMTP, the admin allowlist, Razorpay credentials/webhook, production origins, and approved business policies are configured and tested. Keep secrets in the ignored local `server/.env` and in your host's secret manager in production.
 
 ## Assets
 
