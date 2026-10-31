@@ -40,7 +40,9 @@ src/
     cart/                      Cart state and cart drawer
     checkout/                  Email OTP, delivery details, COD checkout UI
     policies/                  Store policy dialog
-    storefront/                Landing page, product content, images
+    products/                  Catalogue data (products.ts), product page, gallery
+    whatsapp/                  WhatsApp config, message builders, buttons
+    storefront/                Homepage sections and editable copy (data/content.ts)
   shared/
     lib/api.ts                 Same-origin /api client and public feature gates
     ui/                         Reusable controls and icons
@@ -76,7 +78,7 @@ The browser never connects directly to MongoDB. The API connects to the `silvera
 | `orders` | Customer, delivery, immutable item/price snapshot, payment/order state |
 | `webhookEvents` | Razorpay webhook replay protection; provider stays disabled for now |
 
-Atlas is configured for development with a least-privilege `silveram_app` user, restricted IP access, and a free cluster. Five sample products have been seeded **inactive with zero stock**. Replace all placeholder product details, validate inventory/pricing/tax/shipping, and configure paid production Atlas with backups before taking real orders.
+Atlas is configured for development with a least-privilege `silveram_app` user, restricted IP access, and a free cluster. Three placeholder products (`product-1..3`) are seeded **inactive with zero stock** by `npm --prefix server run seed:catalog`; any earlier sample records already in Atlas should be reviewed or deleted, and `npm --prefix server run db:setup` re-run because the category list gained `uncategorised`. Replace all placeholder product details, validate inventory/pricing/tax/shipping, and configure paid production Atlas with backups before taking real orders.
 
 For Atlas provisioning, collection/index details, safe CRUD, deployment secrets, and launch checks, follow [MongoDB Atlas and backend setup](./docs/MONGODB_SETUP.md).
 
@@ -114,3 +116,17 @@ The database health endpoint, `GET /api/health`, pings MongoDB before returning 
 The documented Vercel deployment uses two projects: the Vite storefront rooted at the repository root and the Express API rooted at `server/`. Use same-site custom hostnames, exact HTTPS CORS origins, encrypted Vercel environment variables, and a fixed API egress IP allowlisted in Atlas. See the [Vercel deployment instructions](./docs/MONGODB_SETUP.md#vercel).
 
 The project is **not production-ready for real orders yet**. The free Atlas cluster has no backups and is not a production SLA; the production domain, stable API egress, SMTP, business/admin configuration, product data, and launch testing remain outstanding. Keep all checkout flags off.
+
+
+## Design system and WhatsApp ordering
+
+- Midnight Silver tokens live in `src/styles/tokens.css`; League Spartan is the only font (`@fontsource-variable/league-spartan`).
+- Public settings (`.env.example`): `VITE_WHATSAPP_NUMBER` (Indian mobile), optional `VITE_INSTAGRAM_URL`, `VITE_CONTACT_EMAIL`. Without a WhatsApp number the UI shows a "contact pending" state. Online checkout and Razorpay stay disabled (`VITE_CHECKOUT_ENABLED`/`VITE_RAZORPAY_ENABLED` = false and server gates).
+- Policy text: `src/features/policies/data/policies.ts`. FAQ and page copy: `src/features/storefront/data/content.ts`.
+
+## Replacing the three placeholder products
+
+1. Put photographs in `public/images/products/` (resize/compress; WebP or JPEG, ~1600px long edge).
+2. Edit `src/features/products/data/products.ts`: for each of the three records set `name`, `slug`, `price` (rupees), `shortDescription`, `description`, `images` (`src`, real `width`/`height`, `alt`), and only the verified optional fields (`material`, `purity`, `weight`, `dimensions`, `sizes`, `care`, `deliveryInfo`, `returnInfo`). Set `isPlaceholder: false`. Optional fields that are left out are not shown.
+3. Hero/story/gifting photos: set `HERO.image`, `STORY.image`, `GIFTING.image` in `src/features/storefront/data/content.ts`.
+4. Keep the server in step: edit the same three records in `server/src/scripts/seed-catalog.js` (or via the admin API) with the real category, `priceInPaise`, stock and Cloudinary images; the `_id` must equal the storefront `id`. Only then set `active: true`.

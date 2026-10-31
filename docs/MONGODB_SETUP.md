@@ -18,7 +18,7 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 |---|---|
 | `src/shared/lib/api.ts` | Browser requests to the same-origin `/api` |
 | `src/features/checkout/components/CheckoutDialog.tsx` | Email code, delivery form, COD, and Razorpay UI |
-| `src/features/storefront/data/catalog.ts` | Static presentation images and sample content |
+| `src/features/products/data/products.ts` | Storefront catalogue (three placeholder products) |
 | `server/src/index.js` | API startup and graceful shutdown |
 | `server/src/app.js` | HTTP security, CORS, body parsing, and route wiring |
 | `server/src/config.js` | Validates server environment and secrets |
@@ -206,7 +206,7 @@ Commands (run in `server/`):
 |---|---|
 | `npm run db:setup` | creates collections, validators, indexes from `schema.js` (idempotent) |
 | `npm run db:check` | read-only audit: TLS, structure, stock/reservation integrity, placeholder products |
-| `npm run seed:catalog` | adds inactive sample products |
+| `npm run seed:catalog` | adds the three inactive placeholder products |
 | `npm run dev` / `npm test` | run API / tests |
 
 Change the structure: edit `schema.js` → `npm run db:setup`. Validation is "moderate": new writes must match, old documents are untouched.
