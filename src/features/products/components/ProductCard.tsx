@@ -1,11 +1,12 @@
-import { buttonClasses } from '@/shared/ui/Button';
+import Button, { buttonClasses } from '@/shared/ui/Button';
+import { useCart } from '@/features/cart/context/CartContext';
 import ImageSlot from '@/shared/ui/ImageSlot';
-import { WhatsAppButton, buildProductMessage } from '@/features/whatsapp';
 import { productPath, type Product } from '../data/products';
 import PriceLabel from './PriceLabel';
 
 export default function ProductCard({ product }: { product: Product }) {
   const image = product.images[0];
+  const { addToCart } = useCart();
 
   return (
     <article className="flex h-full flex-col md:flex-row md:gap-8 lg:flex-col lg:gap-0" data-reveal>
@@ -13,10 +14,11 @@ export default function ProductCard({ product }: { product: Product }) {
         <ImageSlot
           src={image?.src}
           alt={image?.alt ?? `${product.name} – photograph coming soon`}
-          width={image?.width ?? 4}
+          width={image?.width ?? 6}
           height={image?.height ?? 5}
-          ratio="4 / 5"
-          sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
+          ratio="6 / 5"
+          sizes="(min-width: 1024px) 400px, (min-width: 768px) 40vw, 100vw"
+          imgClassName="transition-transform duration-500 hover:scale-[1.03]"
           className="border border-border"
         />
       </a>
@@ -27,20 +29,23 @@ export default function ProductCard({ product }: { product: Product }) {
           </a>
         </h3>
         <PriceLabel price={product.price} className="type-body-lg mt-1 block font-medium" />
-        <p className="type-body mt-3 text-text-secondary">
+        <p className="type-body mt-3 line-clamp-4 text-text-secondary">
           {product.shortDescription ?? (product.isPlaceholder ? 'Details coming soon.' : '')}
         </p>
         <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row lg:flex-col xl:flex-row">
           <a href={productPath(product)} className={buttonClasses('secondary', 'md', 'flex-1')}>
-            View details
+            View Product
           </a>
-          <WhatsAppButton
-            message={buildProductMessage(product)}
+          <Button
             variant="primary"
+            size="md"
             className="flex-1"
+            disabled={product.price === null}
+            onClick={() => addToCart(product)}
+            aria-label={`Add ${product.name} to cart`}
           >
-            Enquire
-          </WhatsAppButton>
+            Add to Cart
+          </Button>
         </div>
       </div>
     </article>

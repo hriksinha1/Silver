@@ -11,7 +11,9 @@ import PolicyModal from '@/features/policies/components/PolicyModal';
 import type { PolicyId } from '@/features/policies/data/policies';
 import ProductPage from '@/features/products/components/ProductPage';
 import AnnouncementBar from '@/features/storefront/components/AnnouncementBar';
+import CategoriesSection from '@/features/storefront/components/CategoriesSection';
 import CollectionSection from '@/features/storefront/components/CollectionSection';
+import CraftsmanshipSection from '@/features/storefront/components/CraftsmanshipSection';
 import FaqSection from '@/features/storefront/components/FaqSection';
 import FooterSection from '@/features/storefront/components/FooterSection';
 import GiftingSection from '@/features/storefront/components/GiftingSection';
@@ -31,7 +33,7 @@ const CheckoutDialog = lazy(() => import('@/features/checkout/components/Checkou
 const HOME_META = {
   title: `${SITE.name} | Silver jewellery & gifting`,
   description:
-    'Discover a thoughtfully curated collection of silver pieces, created for moments worth remembering. Enquire and order through WhatsApp.',
+    'Silveram: devotional silver-finish frames, patterned silver kada and a peacock statement ring, chosen for gifting and celebration. Order through WhatsApp.',
 };
 
 function HomePage() {
@@ -53,7 +55,9 @@ function HomePage() {
     <main id="main-content" tabIndex={-1} ref={rootRef} className="focus:outline-none">
       <HeroSection />
       <CollectionSection />
+      <CategoriesSection />
       <StorySection />
+      <CraftsmanshipSection />
       <GiftingSection />
       <TrustSection />
       <FaqSection />

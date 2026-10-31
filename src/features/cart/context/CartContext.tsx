@@ -17,7 +17,7 @@ interface CartContextType {
   cart: CartItem[];
   itemCount: number;
   subtotal: number;
-  addToCart: (product: Product, openCartAfter?: boolean) => void;
+  addToCart: (product: Product, openCartAfter?: boolean, quantity?: number) => void;
   updateQuantity: (id: string, delta: number) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
@@ -101,8 +101,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addToCart = useCallback(
-    (product: Product, openCartAfter = false) => {
-      const next = toCartItem(product, 1);
+    (product: Product, openCartAfter = false, quantity = 1) => {
+      const qty = Math.max(1, Math.min(MAX_ITEM_QUANTITY, Math.floor(quantity)));
+      const next = toCartItem(product, qty);
       if (!next) {
         announce(`${product.name} has no price yet. Please enquire on WhatsApp.`);
         return;
@@ -110,13 +111,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existing = cart.find((item) => item.id === product.id);
       if (existing && existing.quantity >= MAX_ITEM_QUANTITY) {
         announce(`Maximum ${MAX_ITEM_QUANTITY} of each item per order`);
+        if (openCartAfter) setIsCartOpen(true);
         return;
       }
       setCart((prev) =>
         prev.some((item) => item.id === product.id)
           ? prev.map((item) =>
               item.id === product.id
-                ? { ...item, quantity: Math.min(MAX_ITEM_QUANTITY, item.quantity + 1) }
+                ? { ...item, quantity: Math.min(MAX_ITEM_QUANTITY, item.quantity + qty) }
                 : item,
             )
           : [...prev, next],

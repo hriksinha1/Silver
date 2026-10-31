@@ -10,6 +10,8 @@ interface ImageSlotProps {
   /** Eager + high priority for above-the-fold images. */
   priority?: boolean;
   sizes?: string;
+  /** "cover" crops to fill the frame; "contain" shows the whole photograph on a stone mat. */
+  fit?: 'cover' | 'contain';
   className?: string;
   imgClassName?: string;
   /** Text on the placeholder panel (when there is no image or it fails to load). */
@@ -31,6 +33,7 @@ export default function ImageSlot({
   ratio,
   priority = false,
   sizes,
+  fit = 'cover',
   className = '',
   imgClassName = '',
   placeholderLabel = 'Photograph coming soon',
@@ -56,7 +59,7 @@ export default function ImageSlot({
           decoding="async"
           fetchPriority={priority ? 'high' : 'auto'}
           onError={() => setFailed(true)}
-          className={`absolute inset-0 h-full w-full object-cover ${imgClassName}`}
+          className={`absolute inset-0 h-full w-full ${fit === 'contain' ? 'object-contain' : 'object-cover'} ${imgClassName}`}
         />
       ) : (
         <div

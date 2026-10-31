@@ -40,7 +40,7 @@ export default function HeroSection() {
           </p>
           <div data-hero-text className="mt-9 flex flex-col gap-3 sm:flex-row">
             <a href="#collection" className={buttonClasses('inverse', 'lg')}>
-              Discover the collection
+              Shop Collection
             </a>
             <a href="#story" className={buttonClasses('outline-inverse', 'lg')}>
               Our story
@@ -52,12 +52,12 @@ export default function HeroSection() {
           <ImageSlot
             src={HERO.image?.src}
             alt={HERO.image?.alt ?? 'Silveram silver collection – photography coming soon'}
-            width={HERO.image?.width ?? 4}
-            height={HERO.image?.height ?? 5}
-            ratio="4 / 5"
+            width={HERO.image?.width ?? 1}
+            height={HERO.image?.height ?? 1}
+            ratio="1 / 1"
             tone="dark"
             priority
-            sizes="(min-width: 1024px) 480px, 90vw"
+            sizes="(min-width: 1024px) 520px, 90vw"
             placeholderLabel="Silver photography coming soon"
             className="border border-accent-silver/40"
           />

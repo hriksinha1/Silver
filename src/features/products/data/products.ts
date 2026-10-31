@@ -1,9 +1,9 @@
 /**
  * THE product catalogue for the storefront — the one file to edit.
  *
- * Launch catalogue = exactly three records. Everything below is a PLACEHOLDER
- * until real details are supplied. See "Replacing the placeholder products"
- * in README.md for the full workflow (images, price, server seed).
+ * Launch catalogue = exactly three records (Silver Frame, Silver Kada, Peacock Ring).
+ * Name, price, copy and photographs are supplied by the store. Silver purity,
+ * hallmarking, weight, dimensions and stock are NOT supplied, so none are shown.
  *
  * Rules:
  *  - `price` is in rupees (whole number). `null` means "price on request" and
@@ -29,6 +29,10 @@ export interface Product {
   slug: string;
   name: string;
   isPlaceholder: boolean;
+  /** Must match PRODUCT_CATEGORIES in server/src/database/schema.js. */
+  category: 'frame' | 'bangle' | 'ring';
+  /** Short label used on category tiles and breadcrumbs. */
+  categoryLabel: string;
   /** Rupees, whole number. null = not yet priced. */
   price: number | null;
   shortDescription?: string;
@@ -46,30 +50,62 @@ export interface Product {
   returnInfo?: string;
 }
 
+const IMG = '/images/products';
+
 export const PRODUCTS: Product[] = [
   {
     id: 'product-1',
-    slug: 'piece-one',
-    name: 'Piece One',
-    isPlaceholder: true,
-    price: null,
-    images: [],
+    slug: 'silver-frame',
+    name: 'Silver Frame',
+    isPlaceholder: false,
+    category: 'frame',
+    categoryLabel: 'Devotional frames',
+    price: 999,
+    shortDescription:
+      'A beautiful devotional silver-finish frame featuring Goddess Lakshmi and Lord Ganesha, designed for meaningful gifting and home décor.',
+    description:
+      'A timeless expression of devotion, beautifully crafted with intricate representations of Goddess Lakshmi and Lord Ganesha. Its detailed silver-finish artwork and elegant transparent stand make it a thoughtful addition to your home temple. A meaningful gift for festivals, celebrations and auspicious occasions.',
+    images: [
+      { src: `${IMG}/silver-frame-01.webp`, width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on a stand, set against royal blue velvet' },
+      { src: `${IMG}/silver-frame-02.webp`, width: 504, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on ivory satin beside orange marigolds' },
+      { src: `${IMG}/silver-frame-03.webp`, width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame presented in a navy gift box with a gold ribbon' },
+      { src: `${IMG}/silver-frame-04.webp`, width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame with transparent stand on a plain white background' },
+      { src: `${IMG}/silver-frame-05.webp`, width: 504, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on a wooden altar shelf with a lit diya and flowers' },
+      { src: `${IMG}/silver-frame-06.webp`, width: 508, height: 508, alt: 'Close-up of the embossed Lakshmi and Ganesha relief with the Shubh Labh inscription' },
+    ],
   },
   {
     id: 'product-2',
-    slug: 'piece-two',
-    name: 'Piece Two',
-    isPlaceholder: true,
-    price: null,
-    images: [],
+    slug: 'silver-kada',
+    name: 'Silver Kada',
+    isPlaceholder: false,
+    category: 'bangle',
+    categoryLabel: 'Kada & bangles',
+    price: 999,
+    shortDescription:
+      'Intricately patterned traditional silver bangles that bring timeless elegance to festive and everyday styling.',
+    description:
+      'Celebrate traditional artistry with an elegant collection of intricately patterned silver bangles. Beautifully detailed surfaces create a distinctive play of light and texture, making them suitable for festive occasions and everyday ethnic styling. A graceful addition to your jewellery collection.',
+    images: [
+      { src: `${IMG}/silver-kada-01.webp`, width: 1374, height: 1145, alt: 'Stack of intricately patterned silver bangles worn together on a cream display stand' },
+    ],
   },
   {
     id: 'product-3',
-    slug: 'piece-three',
-    name: 'Piece Three',
-    isPlaceholder: true,
-    price: null,
-    images: [],
+    slug: 'peacock-ring',
+    name: 'Peacock Ring',
+    isPlaceholder: false,
+    category: 'ring',
+    categoryLabel: 'Statement rings',
+    price: 12999,
+    shortDescription:
+      'An artistic peacock-inspired statement ring featuring vibrant colours and intricate decorative detailing.',
+    description:
+      'Inspired by the timeless beauty of the Indian peacock, this statement ring showcases vibrant enamel-like detailing and colourful gemstone accents. Its intricate craftsmanship and striking silhouette create an elegant centrepiece for special occasions. A distinctive jewellery piece for those who appreciate artistic design.',
+    images: [
+      { src: `${IMG}/peacock-ring-01.webp`, width: 1374, height: 1145, alt: 'Gold-toned peacock statement ring with blue and green enamel-like feathers and colourful stones, side view' },
+      { src: `${IMG}/peacock-ring-02.webp`, width: 1374, height: 1145, alt: 'Gold-toned peacock statement ring seen from above, showing the fanned feather detail and coloured stones' },
+    ],
   },
 ];
 

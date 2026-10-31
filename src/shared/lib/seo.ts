@@ -27,9 +27,11 @@ export interface PageMeta {
   description: string;
   /** Path/hash appended to the site URL for the canonical link. */
   path?: string;
+  /** Site-relative or absolute image URL for social previews. */
+  image?: string;
 }
 
-export function setPageMeta({ title, description, path = '' }: PageMeta) {
+export function setPageMeta({ title, description, path = '', image }: PageMeta) {
   document.title = title;
   setMeta('meta[name="description"]', 'name', 'description', description);
   setMeta('meta[property="og:title"]', 'property', 'og:title', title);
@@ -39,6 +41,9 @@ export function setPageMeta({ title, description, path = '' }: PageMeta) {
   const url = `${SITE.url}/${path}`;
   setMeta('meta[property="og:url"]', 'property', 'og:url', url);
   setCanonical(url);
+  const imageUrl = new URL(image ?? '/images/products/silver-frame-01.webp', SITE.url).toString();
+  setMeta('meta[property="og:image"]', 'property', 'og:image', imageUrl);
+  setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl);
 }
 
 /** Inject (or clear, with null) a JSON-LD block. Only pass factual data. */

@@ -74,8 +74,9 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                   <ImageSlot
                     src={item.image}
                     alt={item.imageAlt ?? item.name}
-                    width={4}
-                    height={5}
+                    width={1}
+                    height={1}
+                    fit="contain"
                     placeholderLabel=""
                     className="w-20 shrink-0 rounded-[2px] border border-border"
                     sizes="80px"
@@ -137,6 +138,13 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
               Sending this list on WhatsApp is an enquiry only. Your order is not confirmed until Silveram
               confirms it with you, including availability, delivery and payment details.
             </p>
+            <button
+              type="button"
+              onClick={close}
+              className="block w-full text-center text-sm text-text-secondary underline underline-offset-4 hover:text-text-primary"
+            >
+              Continue shopping
+            </button>
             <WhatsAppButton message={message} size="lg" className="w-full">
               Send order enquiry on WhatsApp
             </WhatsAppButton>
