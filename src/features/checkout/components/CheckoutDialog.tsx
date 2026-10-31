@@ -51,7 +51,7 @@ declare global {
 }
 
 const fieldClassName =
-  'w-full rounded-[2px] border border-[#DCD7DF] bg-white px-3 py-2.5 text-sm text-[#26102C] outline-none focus:border-[#69388F] focus:ring-2 focus:ring-[#69388F]/20';
+  'w-full rounded-[2px] border border-border bg-white px-3 py-2.5 text-sm text-text-primary outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20';
 
 let razorpayScriptPromise: Promise<void> | undefined;
 
@@ -251,7 +251,7 @@ export default function CheckoutDialog({
         description: 'Jewellery order',
         order_id: order.razorpayOrderId,
         prefill: { name: fullName.trim(), email, contact: phone.replace(/\D/g, '') },
-        theme: { color: '#69388F' },
+        theme: { color: '#182D49' },
         modal: { ondismiss: () => setBusy(false) },
         handler: async (payment) => {
           setBusy(true);
@@ -312,17 +312,17 @@ export default function CheckoutDialog({
     >
       <section
         ref={dialogRef}
-        className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-[2px] bg-white text-[#26102C] shadow-2xl"
+        className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-[2px] bg-white text-text-primary shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="checkout-title"
       >
-        <header className="flex items-center justify-between border-b border-[#E2DEE5] px-5 py-4 sm:px-7">
+        <header className="flex items-center justify-between border-b border-border px-5 py-4 sm:px-7">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#69388F]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-primary">
               Silveram checkout
             </p>
-            <h2 id="checkout-title" className="mt-1 font-heading text-2xl font-medium">
+            <h2 id="checkout-title" className="mt-1 text-2xl font-medium">
               {step === 'complete' ? 'Order received' : 'Your order'}
             </h2>
           </div>
@@ -331,7 +331,7 @@ export default function CheckoutDialog({
             type="button"
             onClick={close}
             disabled={busy}
-            className="flex h-9 w-9 items-center justify-center rounded-[2px] text-[#4E4852] hover:bg-[#F5F2F7] disabled:opacity-50"
+            className="flex h-9 w-9 items-center justify-center rounded-[2px] text-text-secondary hover:bg-surface-primary disabled:opacity-50"
             aria-label="Close checkout"
           >
             <CloseIcon size={20} />
@@ -339,25 +339,25 @@ export default function CheckoutDialog({
         </header>
 
         <div className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
-          <ol className="mb-6 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-[#706977]" aria-label="Checkout progress">
+          <ol className="mb-6 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted" aria-label="Checkout progress">
             {['Email', 'Delivery', 'Payment'].map((label, index) => {
               const activeIndex = step === 'email' || step === 'code' ? 0 : step === 'shipping' ? 1 : 2;
               return (
                 <li key={label} className="flex flex-1 items-center gap-2">
-                  <span className={`flex h-6 w-6 items-center justify-center rounded-full ${index <= activeIndex ? 'bg-[#69388F] text-white' : 'bg-[#EFEFEF]'}`}>
+                  <span className={`flex h-6 w-6 items-center justify-center rounded-full ${index <= activeIndex ? 'bg-brand-primary text-white' : 'bg-surface-secondary'}`}>
                     {index + 1}
                   </span>
                   <span>{label}</span>
-                  {index < 2 && <span className="h-px flex-1 bg-[#E2DEE5]" aria-hidden="true" />}
+                  {index < 2 && <span className="h-px flex-1 bg-border" aria-hidden="true" />}
                 </li>
               );
             })}
           </ol>
 
           {!isCheckoutEnabled ? (
-            <p className="rounded-[2px] border border-[#E2DEE5] bg-[#FAF8FB] px-4 py-3 text-sm leading-relaxed text-[#4E4852]" role="status">
-              Secure checkout is being prepared. Please contact the store while the database,
-              email, payment, delivery, and policy settings are completed.
+            <p className="rounded-[2px] border border-border bg-surface-primary px-4 py-3 text-sm leading-relaxed text-text-secondary" role="status">
+              Online checkout and payment are not available yet. No order or payment can be made here.
+              Please place your order enquiry through WhatsApp instead.
             </p>
           ) : (
             <>
@@ -370,8 +370,8 @@ export default function CheckoutDialog({
               }}
             >
               <div>
-                <h3 className="font-heading text-xl font-medium">Sign in or continue as a guest</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-[#4E4852]">
+                <h3 className="text-xl font-medium">Sign in or continue as a guest</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-text-secondary">
                   We’ll email you a one-time six-digit verification code before checkout.
                   No password is required.
                 </p>
@@ -399,7 +399,7 @@ export default function CheckoutDialog({
                   required
                 />
               </label>
-              <p className="text-xs leading-relaxed text-[#706977]">
+              <p className="text-xs leading-relaxed text-text-muted">
                 Guest checkout also creates a password-free Silveram account so we can
                 verify your address and associate your order.
               </p>
@@ -412,8 +412,8 @@ export default function CheckoutDialog({
           {step === 'code' && (
             <form className="space-y-4" onSubmit={(event) => void verifyEmail(event)}>
               <div>
-                <h3 className="font-heading text-xl font-medium">Check your inbox</h3>
-                <p className="mt-1 text-sm text-[#4E4852]">
+                <h3 className="text-xl font-medium">Check your inbox</h3>
+                <p className="mt-1 text-sm text-text-secondary">
                   Enter the six-digit code sent to <strong>{email}</strong>.
                 </p>
               </div>
@@ -437,7 +437,7 @@ export default function CheckoutDialog({
                 type="button"
                 disabled={busy || resendSeconds > 0}
                 onClick={() => void startEmailVerification()}
-                className="w-full text-center text-xs text-[#69388F] underline underline-offset-2 disabled:text-[#8D8792]"
+                className="w-full text-center text-xs text-brand-primary underline underline-offset-2 disabled:text-text-muted"
               >
                 {resendSeconds > 0 ? `Resend code in ${resendSeconds}s` : 'Resend code'}
               </button>
@@ -447,8 +447,8 @@ export default function CheckoutDialog({
           {step === 'shipping' && (
             <form className="space-y-4" onSubmit={(event) => void finishOrder(event)}>
               <div>
-                <h3 className="font-heading text-xl font-medium">Delivery details</h3>
-                <p className="mt-1 text-sm text-[#4E4852]">
+                <h3 className="text-xl font-medium">Delivery details</h3>
+                <p className="mt-1 text-sm text-text-secondary">
                   Delivering within India. Your email is verified as {email}.
                 </p>
               </div>
@@ -477,34 +477,34 @@ export default function CheckoutDialog({
                   PIN code
                   <input className={`${fieldClassName} mt-1.5`} inputMode="numeric" autoComplete="postal-code" value={postalCode} onChange={(event) => setPostalCode(event.target.value.replace(/\D/g, '').slice(0, 6))} maxLength={6} required />
                 </label>
-                <div className="flex items-end pb-3 text-xs text-[#706977]">India</div>
+                <div className="flex items-end pb-3 text-xs text-text-muted">India</div>
               </div>
 
-              <fieldset className="space-y-2 border-t border-[#E2DEE5] pt-4">
+              <fieldset className="space-y-2 border-t border-border pt-4">
                 <legend className="mb-2 text-xs font-semibold">Payment method</legend>
                 {isRazorpayEnabled && (
-                  <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-[#DCD7DF] p-3 text-sm">
-                    <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className="mt-0.5 accent-[#69388F]" />
-                    <span><strong className="block text-xs">Pay online</strong><span className="text-xs text-[#706977]">Secure payment with Razorpay</span></span>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-border p-3 text-sm">
+                    <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className="mt-0.5 accent-brand-primary" />
+                    <span><strong className="block text-xs">Pay online</strong><span className="text-xs text-text-muted">Secure payment with Razorpay</span></span>
                   </label>
                 )}
-                <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-[#DCD7DF] p-3 text-sm">
-                  <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="mt-0.5 accent-[#69388F]" />
-                  <span><strong className="block text-xs">Cash on delivery</strong><span className="text-xs text-[#706977]">Pay when your order arrives</span></span>
+                <label className="flex cursor-pointer items-start gap-3 rounded-[2px] border border-border p-3 text-sm">
+                  <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="mt-0.5 accent-brand-primary" />
+                  <span><strong className="block text-xs">Cash on delivery</strong><span className="text-xs text-text-muted">Pay when your order arrives</span></span>
                 </label>
               </fieldset>
               {paymentMethod === 'cod' && (
-                <p className="text-xs leading-relaxed text-[#706977]">
+                <p className="text-xs leading-relaxed text-text-muted">
                   Pay the order total in cash when your delivery arrives. Make sure your phone number
                   and delivery address are correct.
                 </p>
               )}
 
-              <div className="flex items-center justify-between border-t border-[#E2DEE5] pt-4 text-sm">
+              <div className="flex items-center justify-between border-t border-border pt-4 text-sm">
                 <span>Estimated total</span>
                 <strong>{formatINR(subtotalEstimate)}</strong>
               </div>
-              <p className="text-xs leading-relaxed text-[#706977]">
+              <p className="text-xs leading-relaxed text-text-muted">
                 This total currently reflects catalogue prices only. Configure applicable
                 taxes and shipping rules before accepting live orders.
               </p>
@@ -516,12 +516,12 @@ export default function CheckoutDialog({
 
           {step === 'complete' && placedOrder && (
             <div className="space-y-4 py-4 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#F5F2F7] text-2xl text-[#69388F]" aria-hidden="true">✓</div>
-              <h3 className="font-heading text-2xl font-medium">Thank you, {fullName}.</h3>
-              <p className="text-sm leading-relaxed text-[#4E4852]">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-surface-primary text-2xl text-brand-primary" aria-hidden="true">✓</div>
+              <h3 className="text-2xl font-medium">Thank you, {fullName}.</h3>
+              <p className="text-sm leading-relaxed text-text-secondary">
                 Your order has been received. Save this reference for your records.
               </p>
-              <p className="rounded-[2px] bg-[#FAF8FB] px-4 py-3 text-xs">
+              <p className="rounded-[2px] bg-surface-primary px-4 py-3 text-xs">
                 Order reference <strong className="font-mono">{placedOrder.orderId}</strong>
               </p>
               <p className="text-sm font-semibold">Total {formatINR(placedOrder.amountInPaise / 100)}</p>

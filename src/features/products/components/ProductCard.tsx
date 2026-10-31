@@ -8,8 +8,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const image = product.images[0];
 
   return (
-    <article className="flex h-full flex-col" data-reveal>
-      <a href={productPath(product)} className="block" aria-label={`${product.name} – view details`}>
+    <article className="flex h-full flex-col md:flex-row md:gap-8 lg:flex-col lg:gap-0" data-reveal>
+      <a href={productPath(product)} className="block md:w-2/5 md:shrink-0 lg:w-full" aria-label={`${product.name} – view details`}>
         <ImageSlot
           src={image?.src}
           alt={image?.alt ?? `${product.name} – photograph coming soon`}
@@ -20,7 +20,7 @@ export default function ProductCard({ product }: { product: Product }) {
           className="border border-border"
         />
       </a>
-      <div className="flex flex-1 flex-col pt-5">
+      <div className="flex flex-1 flex-col pt-5 md:pt-0 lg:pt-5">
         <h3 className="type-h3">
           <a href={productPath(product)} className="hover:underline underline-offset-4 decoration-accent-silver">
             {product.name}

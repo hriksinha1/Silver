@@ -3,67 +3,28 @@ import { MongoClient } from 'mongodb';
 const uri = process.env.MONGODB_URI;
 if (!uri) throw new Error('Set MONGODB_URI in server/.env before seeding.');
 
+// The launch catalogue is exactly THREE placeholder records. Their `_id`s match
+// the storefront catalogue in src/features/products/data/products.ts; keep both in sync.
+// Records are created INACTIVE with zero stock. Before activating one, replace the
+// placeholder name, category, price and description, upload images, and set stock.
+// priceInPaise is a 1-rupee technical placeholder (the schema requires a positive
+// value); it is NOT a real price and inactive products can never be ordered.
+const placeholder = (n, name) => ({
+  _id: `product-${n}`,
+  sku: `SV-00${n}`,
+  name,
+  description: '',
+  category: 'uncategorised',
+  priceInPaise: 100,
+  currency: 'INR',
+  stockQuantity: 0,
+  active: false,
+});
+
 const products = [
-  {
-    _id: 'product-celeste-diamond-ring',
-    sku: 'SR-001',
-    name: 'Celeste Diamond Ring',
-    description: 'Replace with verified materials, dimensions, and care details.',
-    category: 'ring',
-    priceInPaise: 2490000,
-    currency: 'INR',
-    stockQuantity: 0,
-    active: false,
-    imageUrl: '/images/product-ring.webp',
-  },
-  {
-    _id: 'product-minimal-diamond-necklace',
-    sku: 'SN-001',
-    name: 'Minimal Diamond Necklace',
-    description: 'Replace with verified materials, dimensions, and care details.',
-    category: 'necklace',
-    priceInPaise: 1990000,
-    currency: 'INR',
-    stockQuantity: 0,
-    active: false,
-    imageUrl: '/images/product-necklace.webp',
-  },
-  {
-    _id: 'product-floral-pattern-earring',
-    sku: 'SE-001',
-    name: 'Floral Pattern Earring',
-    description: 'Replace with verified materials, dimensions, and care details.',
-    category: 'earring',
-    priceInPaise: 1490000,
-    currency: 'INR',
-    stockQuantity: 0,
-    active: false,
-    imageUrl: '/images/product-earring.webp',
-  },
-  {
-    _id: 'product-solis-charm-bracelet',
-    sku: 'SB-001',
-    name: 'Solis Charm Bracelet',
-    description: 'Replace with verified materials, dimensions, and care details.',
-    category: 'bracelet',
-    priceInPaise: 1890000,
-    currency: 'INR',
-    stockQuantity: 0,
-    active: false,
-    imageUrl: '/images/product-bracelet.webp',
-  },
-  {
-    _id: 'gold-statement-ring',
-    sku: 'SR-002',
-    name: 'Gold Statement Ring',
-    description: 'Replace with verified materials, dimensions, and care details.',
-    category: 'ring',
-    priceInPaise: 2990000,
-    currency: 'INR',
-    stockQuantity: 0,
-    active: false,
-    imageUrl: '/images/hero-ring-box.webp',
-  },
+  placeholder(1, 'Piece One'),
+  placeholder(2, 'Piece Two'),
+  placeholder(3, 'Piece Three'),
 ];
 
 const client = new MongoClient(uri, { appName: 'silveram-catalog-seed' });
@@ -79,7 +40,7 @@ try {
       { upsert: true },
     );
   }
-  console.log('Created missing inactive sample products. Existing catalog entries were not changed.');
+  console.log('Created missing inactive placeholder products. Existing catalog entries were not changed.');
 } finally {
   await client.close();
 }

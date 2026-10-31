@@ -101,3 +101,19 @@
     radial-gradient(ellipse 60% 70% at 70% 35%, rgb(167 173 181 / 0.22) 0%, transparent 70%),
     radial-gradient(ellipse 40% 50% at 20% 90%, rgb(167 173 181 / 0.10) 0%, transparent 70%);
 }
+
+/* Details/summary disclosure marker (custom, League Spartan-friendly). */
+details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.75rem;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after {
+  content: "+";
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+}
+details[open] > summary::after { content: "\2212"; }

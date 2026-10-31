@@ -8,7 +8,7 @@
 // `db:setup` is idempotent and safe to re-run. Validation level is "moderate":
 // new/updated documents must match, older documents are left alone.
 
-export const PRODUCT_CATEGORIES = ['ring', 'necklace', 'earring', 'bracelet', 'frame'];
+export const PRODUCT_CATEGORIES = ['ring', 'necklace', 'earring', 'bracelet', 'frame', 'uncategorised'];
 export const ORDER_STATUSES = [
   'placed_cod', 'pending_payment', 'paid', 'fulfilled',
   'cancelled', 'expired', 'refunded', 'payment_review',
