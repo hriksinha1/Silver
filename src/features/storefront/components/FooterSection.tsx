@@ -21,7 +21,7 @@ export default function FooterSection({ onOpenPolicy }: FooterSectionProps) {
         <div className="sm:col-span-2 lg:col-span-1">
           <p className="text-xl font-semibold uppercase tracking-[0.3em]">Silveram</p>
           <p className="type-body mt-4 max-w-sm text-surface-primary/80">
-            A silver boutique for thoughtfully selected pieces and gifts.
+            Silver gifting and jewellery, thoughtfully selected for the moments that matter.
           </p>
         </div>
 

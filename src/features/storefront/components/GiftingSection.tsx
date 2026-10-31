@@ -11,9 +11,9 @@ export default function GiftingSection() {
             <ImageSlot
               src={GIFTING.image?.src}
               alt={GIFTING.image?.alt ?? 'Silver gifting – photography coming soon'}
-              width={GIFTING.image?.width ?? 5}
-              height={GIFTING.image?.height ?? 4}
-              ratio="5 / 4"
+              width={GIFTING.image?.width ?? 1}
+              height={GIFTING.image?.height ?? 1}
+              ratio="1 / 1"
               sizes="(min-width: 1024px) 560px, 100vw"
             />
           </div>

@@ -38,7 +38,7 @@ export default function HeroSection() {
           </p>
           <div data-hero-text className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
             <a href="#collection" className={`${buttonClasses('inverse', 'lg')} group gap-3`}>
-              <span>Discover the collection</span>
+              <span>Shop Collection</span>
               <ArrowRightIcon size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </a>
             <a href="#story" className={buttonClasses('outline-inverse', 'lg')}>
@@ -67,12 +67,12 @@ export default function HeroSection() {
             <ImageSlot
               src={HERO.image?.src}
               alt={HERO.image?.alt ?? 'Silveram silver collection – photography coming soon'}
-              width={HERO.image?.width ?? 4}
-              height={HERO.image?.height ?? 5}
-              ratio="4 / 5"
+              width={HERO.image?.width ?? 1}
+              height={HERO.image?.height ?? 1}
+              ratio="1 / 1"
               tone="dark"
               priority
-              sizes="(min-width: 1024px) 480px, 90vw"
+              sizes="(min-width: 1024px) 520px, 90vw"
               placeholderLabel="Silver photography coming soon"
             />
             <div className="absolute bottom-4 left-4 right-4 rounded-[2px] border border-white/10 bg-brand-primary/80 px-4 py-2.5 backdrop-blur-md">

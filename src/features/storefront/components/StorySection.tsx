@@ -43,9 +43,9 @@ export default function StorySection() {
             <ImageSlot
               src={STORY.image?.src}
               alt={STORY.image?.alt ?? 'Silver craftsmanship – photography coming soon'}
-              width={STORY.image?.width ?? 5}
-              height={STORY.image?.height ?? 4}
-              ratio="5 / 4"
+              width={STORY.image?.width ?? 6}
+              height={STORY.image?.height ?? 5}
+              ratio="6 / 5"
               tone="dark"
               sizes="(min-width: 1024px) 560px, 100vw"
             />

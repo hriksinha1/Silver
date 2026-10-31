@@ -83,8 +83,9 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                   <ImageSlot
                     src={item.image}
                     alt={item.imageAlt ?? item.name}
-                    width={4}
-                    height={5}
+                    width={1}
+                    height={1}
+                    fit="contain"
                     placeholderLabel=""
                     className="w-20 shrink-0 rounded-[2px] border border-border"
                     sizes="80px"
@@ -161,6 +162,13 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                 Online payment disabled for setup. Please order through WhatsApp.
               </p>
             )}
+            <button
+              type="button"
+              onClick={close}
+              className="block min-h-11 w-full text-center text-sm text-text-secondary underline underline-offset-4 hover:text-text-primary"
+            >
+              Continue shopping
+            </button>
           </div>
         )}
       </div>

@@ -3,62 +3,107 @@
  * (or deliberately neutral) belong here — no invented policies, claims or metrics.
  */
 export const NAV_LINKS = [
-  { label: 'Home', href: '#home' },
   { label: 'Collection', href: '#collection' },
+  { label: 'Categories', href: '#categories' },
   { label: 'Our Story', href: '#story' },
   { label: 'Gifting', href: '#gifting' },
   { label: 'Contact', href: '#contact' },
 ] as const;
 
-export const ANNOUNCEMENT = 'Discover thoughtfully selected silver pieces.';
+export const ANNOUNCEMENT = 'Thoughtfully selected silver gifting & jewellery · Order personally on WhatsApp';
+
+interface Img {
+  src: string;
+  width: number;
+  height: number;
+  alt: string;
+}
 
 export const HERO = {
-  eyebrow: 'Timeless craft. Lasting meaning.',
+  eyebrow: 'Silver gifting & jewellery',
   heading: 'A little silver. A lifetime of meaning.',
   description:
-    'Discover our thoughtfully curated silver collection, created for moments worth remembering.',
-  /** Replace with a real photograph path (e.g. /images/hero.jpg) when available. */
-  image: null as null | { src: string; width: number; height: number; alt: string },
+    'Devotional décor, traditional bangles and a statement ring, selected for festivals, celebrations and the moments worth marking.',
+  image: {
+    src: '/images/products/silver-frame-01.webp',
+    width: 508,
+    height: 508,
+    alt: 'Silveram silver-finish Lakshmi and Ganesha frame on royal blue velvet',
+  } as Img,
 };
 
 export const COLLECTION = {
   heading: 'Three Pieces. Endless Meaning.',
-  description: 'A carefully curated selection of silver treasures.',
+  description: 'A carefully curated selection, each piece chosen for gifting, festivals and everyday celebration.',
+};
+
+export const CATEGORIES_SECTION = {
+  heading: 'Shop by category',
+  description: 'From the home temple to the wrist and the hand.',
 };
 
 export const STORY = {
-  heading: 'Made to be treasured.',
+  heading: 'Gifts that carry a blessing.',
   description:
-    'Every detail matters. Discover the craftsmanship, material and story behind each silver piece.',
-  image: null as null | { src: string; width: number; height: number; alt: string },
+    'In India, a gift is rarely just an object. It marks Diwali and Dhanteras, a wedding or a housewarming, and it says “may good fortune stay with you”. Silveram brings together pieces made for those moments: devotional décor for the home, traditional bangles for festive dressing and an artistic ring for special occasions.',
+  image: {
+    src: '/images/products/peacock-ring-02.webp',
+    width: 1374,
+    height: 1145,
+    alt: 'Peacock statement ring with coloured stones and enamel-like feathers on a marble surface',
+  } as Img,
+};
+
+export const CRAFTSMANSHIP = {
+  heading: 'Look closely.',
+  description:
+    'Fine detail is what makes a piece worth keeping. The frame carries an embossed relief of Lakshmi and Ganesha with a carved arch and pillars. The kada’s surfaces are cut with varied textures that catch the light. The ring pairs a sculpted peacock with enamel-like colour and set stones.',
+  points: [
+    { id: 'relief', title: 'Embossed devotional relief', text: 'Silver Frame: Lakshmi, Ganesha and the Shubh Labh inscription.' },
+    { id: 'texture', title: 'Patterned surfaces', text: 'Silver Kada: geometric and textured patterns across the bangles.' },
+    { id: 'colour', title: 'Colour and detail', text: 'Peacock Ring: enamel-like feathers and colourful gemstone accents.' },
+  ],
+  image: {
+    src: '/images/products/silver-frame-06.webp',
+    width: 508,
+    height: 508,
+    alt: 'Close-up of the embossed Lakshmi and Ganesha relief on the Silver Frame',
+  } as Img,
 };
 
 export const GIFTING = {
   heading: 'A gift beyond occasions.',
-  description: 'For weddings, anniversaries, celebrations and the people who matter.',
-  image: null as null | { src: string; width: number; height: number; alt: string },
+  description:
+    'For festivals, weddings, anniversaries and housewarmings. The Silver Frame sits happily on a home-temple shelf, a thoughtful gift that is easy to give and to keep. Ask us on WhatsApp about gift packaging for any piece.',
+  image: {
+    src: '/images/products/silver-frame-03.webp',
+    width: 508,
+    height: 508,
+    alt: 'Silver Frame presented in a navy gift box with a gold ribbon',
+  } as Img,
 };
 
+/** “Why choose Silveram”: only promises the site actually keeps. */
 export const TRUST_ITEMS = [
   {
-    id: 'authenticity',
-    title: 'Authenticity',
-    description: 'Clear product material and purity details.',
+    id: 'selected',
+    title: 'Thoughtfully selected',
+    description: 'A small, considered collection rather than an endless catalogue.',
   },
   {
     id: 'transparency',
-    title: 'Product transparency',
-    description: 'Honest and accessible product specifications.',
+    title: 'Honest product details',
+    description: 'We show only what we have verified. If a detail is missing, ask us before you buy.',
   },
   {
     id: 'assistance',
     title: 'Personal assistance',
-    description: 'Direct customer communication through WhatsApp.',
+    description: 'Talk to us directly on WhatsApp for questions, availability and orders.',
   },
   {
     id: 'delivery',
-    title: 'Careful delivery',
-    description: 'Clear and accurate delivery information.',
+    title: 'Clear communication',
+    description: 'Delivery timelines and charges are confirmed with you before an order is placed.',
   },
 ] as const;
 

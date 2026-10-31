@@ -16,7 +16,6 @@ function TrustIcon({ id }: { id: string }) {
 
   switch (id) {
     case 'authenticity':
-      // Certified hallmark shield
       return (
         <svg {...props}>
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -24,7 +23,6 @@ function TrustIcon({ id }: { id: string }) {
         </svg>
       );
     case 'transparency':
-      // Faceted silver hallmark / diamond
       return (
         <svg {...props}>
           <path d="M6 3h12l4 6-10 12L2 9l4-6z" />
@@ -34,7 +32,6 @@ function TrustIcon({ id }: { id: string }) {
         </svg>
       );
     case 'assistance':
-      // Concierge chat / personal assistance
       return (
         <svg {...props}>
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -42,7 +39,6 @@ function TrustIcon({ id }: { id: string }) {
         </svg>
       );
     case 'delivery':
-      // Insured parcel / careful transit
       return (
         <svg {...props}>
           <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
@@ -59,12 +55,12 @@ export default function TrustSection() {
   return (
     <section aria-labelledby="trust-heading" className="section-pad border-y border-border/60 bg-surface-primary">
       <div className="page-container">
-        <div className="mx-auto max-w-2xl text-center mb-12 md:mb-16" data-reveal>
-          <h2 id="trust-heading" className="type-h2 font-medium">
-            The Silveram Commitment
+        <div className="mx-auto mb-12 max-w-2xl text-center md:mb-16" data-reveal>
+          <h2 id="trust-heading" className="type-h2 font-medium text-balance">
+            Why Choose Silveram
           </h2>
           <p className="type-body mt-3 text-text-secondary">
-            Thoughtfully crafted silver backed by verified authenticity and attentive care.
+            Thoughtfully crafted silver backed by verified authenticity, transparent specs, and attentive care.
           </p>
         </div>
 
