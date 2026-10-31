@@ -2,20 +2,21 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { buttonClasses } from '@/shared/ui/Button';
 import ImageSlot from '@/shared/ui/ImageSlot';
+import { ArrowRightIcon } from '@/shared/ui/icons';
 import { HERO } from '../data/content';
 
 export default function HeroSection() {
   const rootRef = useRef<HTMLElement>(null);
 
-  // One short entrance timeline; skipped for reduced-motion users.
+  // Authored entrance animation; honors prefers-reduced-motion
   useEffect(() => {
     const root = rootRef.current;
     if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = gsap.context(() => {
       gsap
-        .timeline({ defaults: { ease: 'power2.out' } })
-        .from('[data-hero-text]', { y: 24, opacity: 0, duration: 0.8, stagger: 0.12 })
-        .from('[data-hero-visual]', { opacity: 0, duration: 1 }, 0.2);
+        .timeline({ defaults: { ease: 'power3.out' } })
+        .from('[data-hero-text]', { y: 28, opacity: 0, duration: 0.9, stagger: 0.12 })
+        .from('[data-hero-visual]', { opacity: 0, scale: 0.96, duration: 1.1, ease: 'power2.out' }, 0.2);
     }, root);
     return () => ctx.revert();
   }, []);
@@ -25,42 +26,62 @@ export default function HeroSection() {
       id="home"
       ref={rootRef}
       aria-labelledby="hero-heading"
-      className="on-navy silver-light text-surface-primary"
+      className="on-navy silver-light relative overflow-hidden text-surface-primary"
     >
-      <div className="page-container grid items-center gap-10 py-14 md:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-24">
+      <div className="page-container grid items-center gap-12 py-16 md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:py-28">
         <div>
-          <p data-hero-text className="type-eyebrow text-accent-silver">
-            {HERO.eyebrow}
-          </p>
-          <h1 id="hero-heading" data-hero-text className="type-display mt-5 text-balance">
+          <h1 id="hero-heading" data-hero-text className="type-display text-balance font-medium tracking-[-0.025em]">
             {HERO.heading}
           </h1>
-          <p data-hero-text className="type-body-lg mt-6 max-w-xl text-surface-primary/80">
+          <p data-hero-text className="type-body-lg mt-6 max-w-xl text-surface-primary/85 leading-relaxed">
             {HERO.description}
           </p>
-          <div data-hero-text className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <a href="#collection" className={buttonClasses('inverse', 'lg')}>
-              Discover the collection
+          <div data-hero-text className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <a href="#collection" className={`${buttonClasses('inverse', 'lg')} group gap-3`}>
+              <span>Discover the collection</span>
+              <ArrowRightIcon size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </a>
             <a href="#story" className={buttonClasses('outline-inverse', 'lg')}>
-              Our story
+              Our story & craft
             </a>
+          </div>
+
+          <div data-hero-text className="mt-12 flex items-center gap-6 border-t border-accent-silver/20 pt-6 text-xs uppercase tracking-[0.18em] text-accent-silver">
+            <span className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-silver" aria-hidden="true" />
+              925 Pure Silver
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-silver" aria-hidden="true" />
+              Hallmark Certified
+            </span>
+            <span className="hidden sm:flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-silver" aria-hidden="true" />
+              Insured Pan-India Shipping
+            </span>
           </div>
         </div>
 
-        <div data-hero-visual className="mx-auto w-full max-w-md lg:max-w-none">
-          <ImageSlot
-            src={HERO.image?.src}
-            alt={HERO.image?.alt ?? 'Silveram silver collection – photography coming soon'}
-            width={HERO.image?.width ?? 4}
-            height={HERO.image?.height ?? 5}
-            ratio="4 / 5"
-            tone="dark"
-            priority
-            sizes="(min-width: 1024px) 480px, 90vw"
-            placeholderLabel="Silver photography coming soon"
-            className="border border-accent-silver/40"
-          />
+        <div data-hero-visual className="relative mx-auto w-full max-w-md lg:max-w-none">
+          <div className="relative overflow-hidden rounded-[2px] border border-accent-silver/40 shadow-2xl">
+            <ImageSlot
+              src={HERO.image?.src}
+              alt={HERO.image?.alt ?? 'Silveram silver collection – photography coming soon'}
+              width={HERO.image?.width ?? 4}
+              height={HERO.image?.height ?? 5}
+              ratio="4 / 5"
+              tone="dark"
+              priority
+              sizes="(min-width: 1024px) 480px, 90vw"
+              placeholderLabel="Silver photography coming soon"
+            />
+            <div className="absolute bottom-4 left-4 right-4 rounded-[2px] border border-white/10 bg-brand-primary/80 px-4 py-2.5 backdrop-blur-md">
+              <p className="type-caption flex items-center justify-between text-surface-primary">
+                <span className="font-semibold uppercase tracking-wider">Hallmarked 925</span>
+                <span className="text-accent-silver">Hand-finished Sterling</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

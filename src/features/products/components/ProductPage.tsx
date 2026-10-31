@@ -102,7 +102,10 @@ export default function ProductPage({ slug, onOpenPolicy }: ProductPageProps) {
           <ProductGallery product={product} />
 
           <div className="lg:pt-4">
-            <p className="type-eyebrow text-text-muted">Silveram</p>
+            <div className="inline-flex items-center gap-2 rounded-[2px] border border-border bg-surface-primary px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-silver" aria-hidden="true" />
+              <span>Certified 925 Sterling Silver</span>
+            </div>
             <h1 className="type-h1 mt-3">{product.name}</h1>
             <PriceLabel price={product.price} className="type-h3 mt-4 block" />
 
