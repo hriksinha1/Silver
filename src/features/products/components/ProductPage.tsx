@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Button, { buttonClasses } from '@/shared/ui/Button';
-import { ArrowLeftIcon } from '@/shared/ui/icons';
-import { useCart } from '@/features/cart/context/CartContext';
+import { MinusIcon, PlusIcon } from '@/shared/ui/icons';
+import ProductCard from './ProductCard';
+import { MAX_ITEM_QUANTITY, useCart } from '@/features/cart/context/CartContext';
 import { WhatsAppButton, buildProductMessage } from '@/features/whatsapp';
 import { SITE } from '@/shared/config/site';
 import { setPageMeta, setStructuredData } from '@/shared/lib/seo';
@@ -51,6 +52,7 @@ function productJsonLd(product: Product) {
 export default function ProductPage({ slug, onOpenPolicy }: ProductPageProps) {
   const product = getProductBySlug(slug);
   const { addToCart } = useCart();
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -68,6 +70,7 @@ export default function ProductPage({ slug, onOpenPolicy }: ProductPageProps) {
         product.description?.slice(0, 155) ??
         `${product.name} from the ${SITE.name} silver collection.`,
       path: productPath(product),
+      image: product.images[0]?.src,
     });
     setStructuredData(productJsonLd(product));
     return () => setStructuredData(null);
@@ -91,12 +94,15 @@ export default function ProductPage({ slug, onOpenPolicy }: ProductPageProps) {
   return (
     <main id="main-content" tabIndex={-1} className="focus:outline-none">
       <div className="page-container pb-16 pt-6 md:pb-24 md:pt-10">
-        <a
-          href="#collection"
-          className="type-caption mb-6 inline-flex min-h-11 items-center gap-2 text-text-secondary hover:text-text-primary"
-        >
-          <ArrowLeftIcon size={16} /> Back to the collection
-        </a>
+        <nav aria-label="Breadcrumb" className="type-caption mb-6 text-text-secondary">
+          <ol className="flex flex-wrap items-center gap-x-2">
+            <li><a href="#home" className="inline-flex min-h-11 items-center hover:text-text-primary hover:underline">Home</a></li>
+            <li aria-hidden="true">/</li>
+            <li><a href="#collection" className="inline-flex min-h-11 items-center hover:text-text-primary hover:underline">Collection</a></li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="font-medium text-text-primary">{product.name}</li>
+          </ol>
+        </nav>
 
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
           <ProductGallery product={product} />
@@ -118,18 +124,51 @@ export default function ProductPage({ slug, onOpenPolicy }: ProductPageProps) {
             )}
 
             <div className="mt-8 flex flex-col gap-3">
-              <WhatsAppButton message={buildProductMessage(product)} size="lg" className="w-full">
-                Enquire on WhatsApp
-              </WhatsAppButton>
+              <div className="flex items-center gap-4">
+                <span id="qty-label" className="type-caption uppercase tracking-[0.12em] text-text-muted">Quantity</span>
+                <div role="group" aria-labelledby="qty-label" className="flex items-center rounded-[2px] border border-border-strong">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    disabled={quantity <= 1}
+                    className="flex h-11 w-11 items-center justify-center text-text-secondary hover:bg-surface-secondary disabled:opacity-40"
+                    aria-label="Decrease quantity"
+                  >
+                    <MinusIcon size={14} />
+                  </button>
+                  <output className="w-10 text-center text-sm font-medium tabular-nums" aria-live="polite">{quantity}</output>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.min(MAX_ITEM_QUANTITY, q + 1))}
+                    disabled={quantity >= MAX_ITEM_QUANTITY}
+                    className="flex h-11 w-11 items-center justify-center text-text-secondary hover:bg-surface-secondary disabled:opacity-40"
+                    aria-label="Increase quantity"
+                  >
+                    <PlusIcon size={14} />
+                  </button>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full"
+                disabled={!canBuy}
+                onClick={() => addToCart(product, false, quantity)}
+              >
+                Add to Cart
+              </Button>
               <Button
                 variant="secondary"
                 size="lg"
                 className="w-full"
                 disabled={!canBuy}
-                onClick={() => addToCart(product, true)}
+                onClick={() => addToCart(product, true, quantity)}
               >
-                Add to bag
+                Buy Now
               </Button>
+              <WhatsAppButton message={buildProductMessage(product)} variant="secondary" size="lg" className="w-full">
+                Enquire on WhatsApp
+              </WhatsAppButton>
               {!canBuy && (
                 <p className="type-caption text-text-muted">
                   Adding to the bag is available once a price is set. Please enquire on WhatsApp.
@@ -187,25 +226,13 @@ export default function ProductPage({ slug, onOpenPolicy }: ProductPageProps) {
 
         <section aria-labelledby="more-heading" className="mt-20 border-t border-border pt-10">
           <h2 id="more-heading" className="type-h3">
-            More from the collection
+            Related products
           </h2>
-          <ul className="mt-4 flex flex-wrap gap-x-8 gap-y-2">
+          <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-8">
             {others.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={productPath(item)}
-                  className="type-body-lg inline-flex min-h-11 items-center underline underline-offset-4 decoration-accent-silver hover:decoration-brand-primary"
-                >
-                  {item.name}
-                </a>
-              </li>
+              <ProductCard key={item.id} product={item} />
             ))}
-            <li>
-              <a href="#collection" className="type-body-lg inline-flex min-h-11 items-center underline underline-offset-4 decoration-accent-silver hover:decoration-brand-primary">
-                View all three pieces
-              </a>
-            </li>
-          </ul>
+          </div>
         </section>
       </div>
     </main>

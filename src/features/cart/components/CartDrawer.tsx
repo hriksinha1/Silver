@@ -138,13 +138,6 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
               Sending this list on WhatsApp is an enquiry only. Your order is not confirmed until Silveram
               confirms it with you, including availability, delivery and payment details.
             </p>
-            <button
-              type="button"
-              onClick={close}
-              className="block w-full text-center text-sm text-text-secondary underline underline-offset-4 hover:text-text-primary"
-            >
-              Continue shopping
-            </button>
             <WhatsAppButton message={message} size="lg" className="w-full">
               Send order enquiry on WhatsApp
             </WhatsAppButton>
@@ -157,6 +150,13 @@ export default function CartDrawer({ onCheckout }: CartDrawerProps) {
                 Online payment is not available yet. Please order through WhatsApp.
               </p>
             )}
+            <button
+              type="button"
+              onClick={close}
+              className="block min-h-11 w-full text-center text-sm text-text-secondary underline underline-offset-4 hover:text-text-primary"
+            >
+              Continue shopping
+            </button>
           </div>
         )}
       </div>

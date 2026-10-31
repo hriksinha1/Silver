@@ -57,6 +57,16 @@ export default function ProductGallery({ product }: { product: Product }) {
   const [isOpen, setIsOpen] = useState(false);
   const images = product.images;
   const current = images[index];
+  const touchStartX = useRef<number | null>(null);
+
+  const step = (delta: number) => setIndex((i) => (i + delta + images.length) % images.length);
+  const onTouchEnd = (event: React.TouchEvent) => {
+    const start = touchStartX.current;
+    touchStartX.current = null;
+    if (start === null || images.length < 2) return;
+    const dx = event.changedTouches[0].clientX - start;
+    if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+  };
 
   if (!current) {
     return (
@@ -72,18 +82,30 @@ export default function ProductGallery({ product }: { product: Product }) {
 
   return (
     <div>
+      <div
+        className="relative"
+        onTouchStart={(event) => {
+          touchStartX.current = event.touches[0].clientX;
+        }}
+        onTouchEnd={onTouchEnd}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowRight') step(1);
+          if (event.key === 'ArrowLeft') step(-1);
+        }}
+      >
       <button
         type="button"
         onClick={() => setIsOpen(true)}
         className="group relative block w-full cursor-zoom-in border border-border"
-        aria-label={`Enlarge image: ${current.alt}`}
+        aria-label={`Enlarge image ${index + 1} of ${images.length}: ${current.alt}`}
       >
         <ImageSlot
           src={current.src}
           alt={current.alt}
           width={current.width}
           height={current.height}
-          ratio="4 / 5"
+          ratio="1 / 1"
+          fit="contain"
           priority
           sizes="(min-width: 1024px) 600px, 100vw"
         />
@@ -91,9 +113,30 @@ export default function ProductGallery({ product }: { product: Product }) {
           Enlarge
         </span>
       </button>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={() => step(-1)}
+            aria-label="Previous image"
+            className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-[2px] bg-surface-primary/90 text-text-primary hover:bg-surface-primary"
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => step(1)}
+            aria-label="Next image"
+            className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-[2px] bg-surface-primary/90 text-text-primary hover:bg-surface-primary"
+          >
+            <span aria-hidden="true">›</span>
+          </button>
+        </>
+      )}
+      </div>
 
       {images.length > 1 && (
-        <ul className="mt-3 grid grid-cols-5 gap-2 sm:gap-3" aria-label="Product images">
+        <ul className="mt-3 grid grid-cols-6 gap-2 sm:gap-3" aria-label="Product images">
           {images.map((image, i) => (
             <li key={image.src}>
               <button
@@ -108,7 +151,8 @@ export default function ProductGallery({ product }: { product: Product }) {
                   alt=""
                   width={image.width}
                   height={image.height}
-                  ratio="4 / 5"
+                  ratio="1 / 1"
+                  fit="contain"
                   sizes="96px"
                 />
               </button>
