@@ -1,191 +1,166 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { PRODUCTS } from '@/features/storefront/data/catalog';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { getProductById, type Product } from '@/features/products/data/products';
 
-const MAX_ITEM_QUANTITY = 10;
+export const MAX_ITEM_QUANTITY = 10;
 
+/** A bag line. Name, price and image always come from the catalogue, never from storage. */
 export interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
   image?: string;
-  subtitle?: string;
+  imageAlt?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: { id: string; name: string; price: number; image?: string; subtitle?: string }, openCartAfter?: boolean) => void;
+  itemCount: number;
+  subtotal: number;
+  addToCart: (product: Product, openCartAfter?: boolean) => void;
   updateQuantity: (id: string, delta: number) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   toastMessage: string | null;
-  highlightedProductId: string | null;
-  setHighlightedProductId: (id: string | null) => void;
-  highlightProduct: (productId: string, productName: string) => void;
   liveAnnouncement: string;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'silveram_cart_items';
-const LEGACY_STORAGE_KEY = 'aurelia_cart_items';
+
+function toCartItem(product: Product, quantity: number): CartItem | null {
+  if (product.price === null) return null;
+  const image = product.images[0];
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    quantity,
+    image: image?.src,
+    imageAlt: image?.alt,
+  };
+}
+
+/** Persist only { id, quantity }; rebuild everything else from the catalogue. */
+function loadCart(): CartItem[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return [];
+    const parsed: unknown = JSON.parse(saved);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((entry: unknown) => {
+      if (!entry || typeof entry !== 'object') return [];
+      const { id, quantity } = entry as { id?: unknown; quantity?: unknown };
+      if (
+        typeof id !== 'string' ||
+        typeof quantity !== 'number' ||
+        !Number.isInteger(quantity) ||
+        quantity < 1 ||
+        quantity > MAX_ITEM_QUANTITY
+      ) {
+        return [];
+      }
+      const product = getProductById(id);
+      const item = product ? toCartItem(product, quantity) : null;
+      return item ? [item] : [];
+    });
+  } catch {
+    return [];
+  }
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (!saved) return [];
-      const parsed: unknown = JSON.parse(saved);
-      if (!Array.isArray(parsed)) return [];
-      return parsed.flatMap((item: unknown) => {
-        if (
-          !item ||
-          typeof item !== 'object' ||
-          !('id' in item) ||
-          typeof item.id !== 'string' ||
-          !('quantity' in item) ||
-          typeof item.quantity !== 'number' ||
-          !Number.isInteger(item.quantity) ||
-          item.quantity < 1 ||
-          item.quantity > MAX_ITEM_QUANTITY
-        ) {
-          return [];
-        }
-        const product = PRODUCTS.find(({ id }) => id === item.id);
-        return product
-          ? [{
-              ...product,
-              quantity: item.quantity,
-            }]
-          : [];
-      });
-    } catch {
-      return [];
-    }
-  });
-
+  const [cart, setCart] = useState<CartItem[]>(loadCart);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState('');
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
-      localStorage.removeItem(LEGACY_STORAGE_KEY);
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(cart.map(({ id, quantity }) => ({ id, quantity }))),
+      );
     } catch {
-      // storage unavailable or full
+      // Storage unavailable or full: the bag simply won't persist.
     }
   }, [cart]);
 
-  // Auto-dismiss toast
   useEffect(() => {
     if (!toastMessage) return;
-    const timer = setTimeout(() => {
-      setToastMessage(null);
-    }, 3200);
+    const timer = setTimeout(() => setToastMessage(null), 3200);
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
-  const addToCart = (
-    item: { id: string; name: string; price: number; image?: string; subtitle?: string },
-    openCartAfter = false
-  ) => {
-    const existingItem = cart.find((current) => current.id === item.id);
-    if (existingItem && existingItem.quantity >= MAX_ITEM_QUANTITY) {
-      const message = `Maximum ${MAX_ITEM_QUANTITY} of each item per order`;
-      setToastMessage(message);
-      setLiveAnnouncement(message);
-      return;
-    }
+  const announce = useCallback((message: string) => {
+    setToastMessage(message);
+    setLiveAnnouncement(message);
+  }, []);
 
-    setCart((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
-      if (existing) {
-        return prev.map((i) =>
-          i.id === item.id
-            ? { ...i, quantity: Math.min(MAX_ITEM_QUANTITY, i.quantity + 1) }
-            : i
-        );
+  const addToCart = useCallback(
+    (product: Product, openCartAfter = false) => {
+      const next = toCartItem(product, 1);
+      if (!next) {
+        announce(`${product.name} has no price yet. Please enquire on WhatsApp.`);
+        return;
       }
-      return [...prev, { ...item, quantity: 1 }];
-    });
-
-    const msg = `${item.name} added to cart`;
-    setToastMessage(msg);
-    setLiveAnnouncement(msg);
-
-    if (openCartAfter) {
-      setIsCartOpen(true);
-    }
-  };
-
-  const updateQuantity = (id: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.id === id) {
-            const newQty = Math.min(MAX_ITEM_QUANTITY, item.quantity + delta);
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  const highlightProduct = (productId: string, productName: string) => {
-    setHighlightedProductId(productId);
-    setLiveAnnouncement(`Showing ${productName}`);
-
-    // Scroll to #best-sellers or element
-    const el = document.getElementById(productId);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      // Move focus after short delay
-      setTimeout(() => {
-        el.focus();
-      }, 500);
-    } else {
-      const section = document.getElementById('best-sellers');
-      if (section) section.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    setTimeout(() => {
-      setHighlightedProductId(null);
-    }, 2200);
-  };
-
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        updateQuantity,
-        removeItem,
-        clearCart,
-        isCartOpen,
-        setIsCartOpen,
-        toastMessage,
-        highlightedProductId,
-        setHighlightedProductId,
-        highlightProduct,
-        liveAnnouncement,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+      const existing = cart.find((item) => item.id === product.id);
+      if (existing && existing.quantity >= MAX_ITEM_QUANTITY) {
+        announce(`Maximum ${MAX_ITEM_QUANTITY} of each item per order`);
+        return;
+      }
+      setCart((prev) =>
+        prev.some((item) => item.id === product.id)
+          ? prev.map((item) =>
+              item.id === product.id
+                ? { ...item, quantity: Math.min(MAX_ITEM_QUANTITY, item.quantity + 1) }
+                : item,
+            )
+          : [...prev, next],
+      );
+      announce(`${product.name} added to bag`);
+      if (openCartAfter) setIsCartOpen(true);
+    },
+    [cart, announce],
   );
+
+  const updateQuantity = useCallback((id: string, delta: number) => {
+    setCart((prev) =>
+      prev.flatMap((item) => {
+        if (item.id !== id) return [item];
+        const quantity = Math.min(MAX_ITEM_QUANTITY, item.quantity + delta);
+        return quantity > 0 ? [{ ...item, quantity }] : [];
+      }),
+    );
+  }, []);
+
+  const removeItem = useCallback((id: string) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const clearCart = useCallback(() => setCart([]), []);
+
+  const value = useMemo<CartContextType>(
+    () => ({
+      cart,
+      itemCount: cart.reduce((sum, item) => sum + item.quantity, 0),
+      subtotal: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      addToCart,
+      updateQuantity,
+      removeItem,
+      clearCart,
+      isCartOpen,
+      setIsCartOpen,
+      toastMessage,
+      liveAnnouncement,
+    }),
+    [cart, addToCart, updateQuantity, removeItem, clearCart, isCartOpen, toastMessage, liveAnnouncement],
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

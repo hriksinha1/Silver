@@ -1,31 +1,21 @@
 import { useCart } from '@/features/cart/context/CartContext';
-import { CartIcon } from '@/shared/ui/icons';
 
-export function Toast() {
+export default function Toast() {
   const { toastMessage, liveAnnouncement } = useCart();
 
   return (
     <>
-      {/* Screen reader live region */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {liveAnnouncement}
       </div>
-
-      {/* Visual Toast Notification */}
       {toastMessage && (
-        <aside
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-[2px] bg-[#26102C] px-4 py-3 text-white shadow-xl border border-white/10 animate-in fade-in slide-in-from-bottom-2 duration-200"
+        <div
+          aria-hidden="true"
+          className="fixed bottom-24 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-[2px] border border-accent-silver bg-brand-primary px-4 py-3 text-center text-sm font-medium text-surface-primary shadow-lg md:bottom-6 md:left-6 md:translate-x-0 md:text-left"
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#69388F] text-white">
-            <CartIcon size={14} />
-          </div>
-          <span className="font-sans text-xs sm:text-sm font-medium">{toastMessage}</span>
-        </aside>
+          {toastMessage}
+        </div>
       )}
     </>
   );
 }
-
-export default Toast;

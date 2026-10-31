@@ -1,0 +1,37 @@
+/*
+ * Silveram — Midnight Silver design tokens.
+ * Single source of truth for colour, type and layout. Tailwind turns every
+ * --color-* / --font-* entry into utilities (bg-brand-primary, text-text-secondary …)
+ * and also exposes it as a CSS variable for plain CSS.
+ */
+@theme {
+  /* Brand */
+  --color-brand-primary: #182d49; /* Midnight Navy */
+  --color-brand-primary-hover: #243f63;
+  --color-brand-primary-active: #101f34;
+
+  /* Surfaces */
+  --color-surface-primary: #f8f7f4; /* Ivory */
+  --color-surface-secondary: #eeece7; /* Soft Stone */
+  --color-surface-white: #ffffff;
+
+  /* Text */
+  --color-text-primary: #20232b;
+  --color-text-secondary: #4a4f5c;
+  --color-text-muted: #5e6471;
+
+  /* Accent + lines */
+  --color-accent-silver: #a7adb5;
+  --color-border: #d9dadc;
+  --color-border-strong: #a7adb5;
+
+  /* Feedback (errors only; no decorative colour) */
+  --color-danger: #9b2c2c;
+
+  /* Typography — League Spartan everywhere */
+  --font-family-base: "League Spartan Variable", "League Spartan", sans-serif;
+  --font-sans: var(--font-family-base);
+
+  --radius-sm: 2px;
+  --container-page: 80rem;
+}

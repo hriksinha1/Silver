@@ -1,81 +1,57 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { CloseIcon } from '@/shared/ui/icons';
 import Button from '@/shared/ui/Button';
+import { useDialog } from '@/shared/hooks/useDialog';
+import { POLICIES, type PolicyId } from '../data/policies';
 
 interface PolicyModalProps {
-  isOpen: boolean;
+  policyId: PolicyId | null;
   onClose: () => void;
-  title: string;
 }
 
-export function PolicyModal({ isOpen, onClose, title }: PolicyModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+export default function PolicyModal({ policyId, onClose }: PolicyModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialog(policyId !== null, onClose, panelRef);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    setTimeout(() => {
-      closeButtonRef.current?.focus();
-    }, 50);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  if (!policyId) return null;
+  const policy = POLICIES[policyId];
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-brand-primary/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="policy-dialog-title"
       onClick={onClose}
     >
       <div
-        ref={modalRef}
-        className="relative w-full max-w-lg rounded-[2px] bg-white p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+        ref={panelRef}
+        tabIndex={-1}
+        className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2px] bg-surface-primary p-6 shadow-2xl focus:outline-none sm:p-8"
+        onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-[#E2DEE5] pb-4">
-          <h2 id="policy-dialog-title" className="font-heading text-2xl font-medium text-[#26102C]">
-            {title}
+        <div className="flex items-start justify-between gap-4 border-b border-border pb-4">
+          <h2 id="policy-dialog-title" className="type-h3">
+            {policy.title}
           </h2>
           <button
-            ref={closeButtonRef}
+            type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[2px] text-[#4E4852] hover:bg-[#F5F2F7] hover:text-[#26102C]"
+            className="-mr-2 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-[2px] text-text-secondary hover:bg-surface-secondary"
             aria-label="Close dialog"
           >
-            <CloseIcon size={18} />
+            <CloseIcon size={22} />
           </button>
         </div>
 
-        <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#4E4852]">
-          <div className="rounded-[2px] bg-[#FAF8FB] p-3 text-xs text-[#69388F] border border-[#E2DEE5]">
-            This {title.toLowerCase()} has not been finalized. Live orders must remain disabled until Silveram publishes approved policy details and a support contact.
-          </div>
-          <p>
-            Checkout uses email verification. When enabled, customer and delivery details are sent to the Silveram server and stored in its MongoDB database to process orders. Online payments are processed by Razorpay. Cart contents are also saved in this browser.
-          </p>
-          <p>
-            Before launch, replace this notice with the store's actual privacy, payment, shipping, cancellation, returns, and refund terms, including applicable retention periods and customer-support details.
-          </p>
+        <div className="type-body mt-5 space-y-3 text-text-secondary">
+          {policy.paragraphs.length > 0
+            ? policy.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)
+            : <p>{policy.pendingNote}</p>}
         </div>
 
         <div className="mt-6 flex justify-end">
-          <Button variant="outline" size="sm" onClick={onClose}>
+          <Button variant="secondary" size="sm" onClick={onClose}>
             Close
           </Button>
         </div>
@@ -83,5 +59,3 @@ export function PolicyModal({ isOpen, onClose, title }: PolicyModalProps) {
     </div>
   );
 }
-
-export default PolicyModal;
