@@ -1,4 +1,5 @@
 import { SITE } from '@/shared/config/site';
+import { productImageUrl } from '@/shared/lib/cloudinary';
 
 const JSON_LD_ID = 'structured-data';
 
@@ -41,7 +42,7 @@ export function setPageMeta({ title, description, path = '', image }: PageMeta) 
   const url = `${SITE.url}/${path}`;
   setMeta('meta[property="og:url"]', 'property', 'og:url', url);
   setCanonical(url);
-  const imageUrl = new URL(image ?? '/images/products/silver-frame-01.webp', SITE.url).toString();
+  const imageUrl = new URL(image ?? productImageUrl('SV-001', 'silver-frame-01'), SITE.url).toString();
   setMeta('meta[property="og:image"]', 'property', 'og:image', imageUrl);
   setMeta('meta[name="twitter:image"]', 'name', 'twitter:image', imageUrl);
 }

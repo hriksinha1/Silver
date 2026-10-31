@@ -10,12 +10,14 @@
  *    the product cannot be added to the bag until a price is set.
  *  - Optional fields (material, purity, weight …) are only rendered when set.
  *    Never enter a value you have not verified.
- *  - `images` are served from /public/images/products/… (or any https URL).
+ *  - `images` are hosted on Cloudinary via productImageUrl(sku, name).
  *    With no images the UI shows a neutral "photograph coming soon" panel.
  *  - Set `isPlaceholder: false` once the record holds real information.
  *  - Keep `id` identical to the `_id` of the matching record on the server
  *    (server/src/scripts/seed-catalog.js) so cart items match orders.
  */
+
+import { productImageUrl } from '@/shared/lib/cloudinary';
 
 export interface ProductImage {
   src: string;
@@ -50,7 +52,6 @@ export interface Product {
   returnInfo?: string;
 }
 
-const IMG = '/images/products';
 
 export const PRODUCTS: Product[] = [
   {
@@ -66,12 +67,12 @@ export const PRODUCTS: Product[] = [
     description:
       'A timeless expression of devotion, beautifully crafted with intricate representations of Goddess Lakshmi and Lord Ganesha. Its detailed silver-finish artwork and elegant transparent stand make it a thoughtful addition to your home temple. A meaningful gift for festivals, celebrations and auspicious occasions.',
     images: [
-      { src: `${IMG}/silver-frame-01.webp`, width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on a stand, set against royal blue velvet' },
-      { src: `${IMG}/silver-frame-02.webp`, width: 504, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on ivory satin beside orange marigolds' },
-      { src: `${IMG}/silver-frame-03.webp`, width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame presented in a navy gift box with a gold ribbon' },
-      { src: `${IMG}/silver-frame-04.webp`, width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame with transparent stand on a plain white background' },
-      { src: `${IMG}/silver-frame-05.webp`, width: 504, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on a wooden altar shelf with a lit diya and flowers' },
-      { src: `${IMG}/silver-frame-06.webp`, width: 508, height: 508, alt: 'Close-up of the embossed Lakshmi and Ganesha relief with the Shubh Labh inscription' },
+      { src: productImageUrl('SV-001', 'silver-frame-01'), width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on a stand, set against royal blue velvet' },
+      { src: productImageUrl('SV-001', 'silver-frame-02'), width: 504, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on ivory satin beside orange marigolds' },
+      { src: productImageUrl('SV-001', 'silver-frame-03'), width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame presented in a navy gift box with a gold ribbon' },
+      { src: productImageUrl('SV-001', 'silver-frame-04'), width: 508, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame with transparent stand on a plain white background' },
+      { src: productImageUrl('SV-001', 'silver-frame-05'), width: 504, height: 508, alt: 'Silver-finish Lakshmi and Ganesha frame on a wooden altar shelf with a lit diya and flowers' },
+      { src: productImageUrl('SV-001', 'silver-frame-06'), width: 508, height: 508, alt: 'Close-up of the embossed Lakshmi and Ganesha relief with the Shubh Labh inscription' },
     ],
   },
   {
@@ -87,7 +88,7 @@ export const PRODUCTS: Product[] = [
     description:
       'Celebrate traditional artistry with an elegant collection of intricately patterned silver bangles. Beautifully detailed surfaces create a distinctive play of light and texture, making them suitable for festive occasions and everyday ethnic styling. A graceful addition to your jewellery collection.',
     images: [
-      { src: `${IMG}/silver-kada-01.webp`, width: 1374, height: 1145, alt: 'Stack of intricately patterned silver bangles worn together on a cream display stand' },
+      { src: productImageUrl('SV-002', 'silver-kada-01'), width: 1374, height: 1145, alt: 'Stack of intricately patterned silver bangles worn together on a cream display stand' },
     ],
   },
   {
@@ -103,8 +104,8 @@ export const PRODUCTS: Product[] = [
     description:
       'Inspired by the timeless beauty of the Indian peacock, this statement ring showcases vibrant enamel-like detailing and colourful gemstone accents. Its intricate craftsmanship and striking silhouette create an elegant centrepiece for special occasions. A distinctive jewellery piece for those who appreciate artistic design.',
     images: [
-      { src: `${IMG}/peacock-ring-01.webp`, width: 1374, height: 1145, alt: 'Gold-toned peacock statement ring with blue and green enamel-like feathers and colourful stones, side view' },
-      { src: `${IMG}/peacock-ring-02.webp`, width: 1374, height: 1145, alt: 'Gold-toned peacock statement ring seen from above, showing the fanned feather detail and coloured stones' },
+      { src: productImageUrl('SV-003', 'peacock-ring-01'), width: 1374, height: 1145, alt: 'Gold-toned peacock statement ring with blue and green enamel-like feathers and colourful stones, side view' },
+      { src: productImageUrl('SV-003', 'peacock-ring-02'), width: 1374, height: 1145, alt: 'Gold-toned peacock statement ring seen from above, showing the fanned feather detail and coloured stones' },
     ],
   },
 ];
