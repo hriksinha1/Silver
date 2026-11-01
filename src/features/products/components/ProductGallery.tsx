@@ -144,7 +144,7 @@ export default function ProductGallery({ product }: { product: Product }) {
                 onClick={() => setIndex(i)}
                 aria-label={`Show image ${i + 1} of ${images.length}`}
                 aria-current={i === index}
-                className={`block w-full border-2 ${i === index ? 'border-brand-primary' : 'border-transparent hover:border-accent-silver'}`}
+                className={`block w-full rounded-[2px] overflow-hidden border-2 transition-all duration-200 ${i === index ? 'border-brand-primary shadow-sm' : 'border-border/60 hover:border-accent-silver'}`}
               >
                 <ImageSlot
                   src={image.src}

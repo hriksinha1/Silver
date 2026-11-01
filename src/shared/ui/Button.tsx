@@ -5,16 +5,16 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const base =
   'inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold uppercase tracking-[0.12em] ' +
-  'transition-colors duration-200 cursor-pointer select-none text-center ' +
-  'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
+  'transition-all duration-150 cursor-pointer select-none text-center active:scale-[0.98] ' +
+  'disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 aria-disabled:cursor-not-allowed aria-disabled:opacity-50';
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    'bg-brand-primary border-brand-primary text-surface-primary hover:bg-brand-primary-hover active:bg-brand-primary-active',
+    'bg-brand-primary border-brand-primary text-surface-primary hover:bg-brand-primary-hover active:bg-brand-primary-active shadow-sm hover:shadow',
   secondary:
     'bg-transparent border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-surface-primary',
   inverse:
-    'bg-surface-primary border-surface-primary text-brand-primary hover:bg-surface-secondary hover:border-surface-secondary',
+    'bg-surface-primary border-surface-primary text-brand-primary hover:bg-surface-secondary hover:border-surface-secondary shadow-sm hover:shadow',
   'outline-inverse':
     'bg-transparent border-accent-silver text-surface-primary hover:bg-surface-primary hover:text-brand-primary hover:border-surface-primary',
   text:

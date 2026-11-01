@@ -319,7 +319,7 @@ export default function CheckoutDialog({
       >
         <header className="flex items-center justify-between border-b border-border px-5 py-4 sm:px-7">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-primary">
+            <p className="type-caption font-semibold uppercase tracking-[0.18em] text-brand-primary">
               Silveram checkout
             </p>
             <h2 id="checkout-title" className="mt-1 text-2xl font-medium">
@@ -339,7 +339,7 @@ export default function CheckoutDialog({
         </header>
 
         <div className="overflow-y-auto px-5 py-5 sm:px-7 sm:py-6">
-          <ol className="mb-6 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-text-muted" aria-label="Checkout progress">
+          <ol className="mb-6 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted" aria-label="Checkout progress">
             {['Email', 'Delivery', 'Payment'].map((label, index) => {
               const activeIndex = step === 'email' || step === 'code' ? 0 : step === 'shipping' ? 1 : 2;
               return (

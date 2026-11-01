@@ -81,13 +81,33 @@
     outline-offset: 1px;
     border-color: var(--color-brand-primary);
   }
+
+  /* Micro-interactions & jewellery accents */
+  .silver-card {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  }
+  .silver-card:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: 0 10px 30px -10px rgba(24, 45, 73, 0.08);
+  }
+
+  .jewellery-image-stage {
+    overflow: hidden;
+    position: relative;
+  }
+  .jewellery-image-stage img {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .group:hover .jewellery-image-stage img {
+    transform: scale(1.04);
+  }
 }
 
 /* Subtle fade-up used by useReveal(); content is visible without JS. */
 .js-reveal {
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .js-reveal.is-visible {
   opacity: 1;
@@ -112,7 +132,7 @@ details > summary {
 details > summary::-webkit-details-marker { display: none; }
 details > summary::after {
   content: "+";
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   line-height: 1;
   color: var(--color-text-muted);
 }
