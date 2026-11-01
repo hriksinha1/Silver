@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { collections } from '../db.js';
+import { queueOrderConfirmation } from '../mail/orderConfirmation.js';
 import { verifyRazorpayWebhookSignature } from '../payments/razorpay/signatures.js';
 
 export function createWebhookRouter(config) {
@@ -32,7 +33,10 @@ export function createWebhookRouter(config) {
           },
           { $set: { status: 'paid', razorpayPaymentId: payment.id, updatedAt: new Date() } },
         );
-        if (!result.matchedCount) {
+        if (result.matchedCount) {
+          const paid = await orders.findOne({ razorpayOrderId: payment.order_id }, { projection: { _id: 1 } });
+          if (paid) queueOrderConfirmation(config, paid._id);
+        } else {
           await orders.updateOne(
             { razorpayOrderId: payment.order_id, status: 'expired' },
             {

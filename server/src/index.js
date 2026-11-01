@@ -1,6 +1,7 @@
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { closeDatabase, connectDatabase } from './db.js';
+import { startConfirmationRetrySweeper } from './mail/orderConfirmation.js';
 import { startReservationSweeper } from './routes/orders.js';
 
 const config = loadConfig();
@@ -12,6 +13,7 @@ const server = app.listen(config.port, () => {
 });
 
 startReservationSweeper();
+startConfirmationRetrySweeper(config);
 
 async function shutdown(signal) {
   console.log(`Received ${signal}; shutting down Silveram API.`);

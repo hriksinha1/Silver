@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { collections, mongoClient } from '../db.js';
 import { requireUser } from '../middleware.js';
+import { queueOrderConfirmation } from '../mail/orderConfirmation.js';
 import {
   createRazorpayOrder,
   verifyCapturedPayment,
@@ -251,6 +252,7 @@ export function createOrdersRouter(config) {
       }
 
       const order = await reserveOrder(config, parsed.data, req.user);
+      if (order.status === 'placed_cod') queueOrderConfirmation(config, order._id);
       return res.json(orderResponse(order, config.razorpayKeyId));
     } catch (error) {
       if (error?.status) return res.status(error.status).json({ error: error.message });
@@ -276,6 +278,7 @@ export function createOrdersRouter(config) {
         return res.status(403).json({ error: 'This payment does not match your order.' });
       }
       if (order.status === 'paid' && order.razorpayPaymentId === paymentId) {
+        queueOrderConfirmation(config, order._id);
         return res.json({ success: true, orderId: order._id });
       }
       if (order.status !== 'pending_payment') {
@@ -304,6 +307,7 @@ export function createOrdersRouter(config) {
           return res.status(409).json({ error: 'The order status changed while payment was being verified.' });
         }
       }
+      queueOrderConfirmation(config, order._id);
       return res.json({ success: true, orderId: order._id });
     } catch (error) {
       next(error);

@@ -20,6 +20,35 @@ function secret(name) {
   return value;
 }
 
+// Mailjet: MAILJET_API_KEY / MAILJET_SECRET_KEY double as the SMTP login and the REST API login.
+// Any explicit SMTP_* value still wins, so another relay can be swapped in without code changes.
+function mailConfig() {
+  const mailjetApiKey = process.env.MAILJET_API_KEY?.trim() || '';
+  const mailjetSecretKey = process.env.MAILJET_SECRET_KEY || '';
+  if (Boolean(mailjetApiKey) !== Boolean(mailjetSecretKey)) {
+    throw new Error('Set both MAILJET_API_KEY and MAILJET_SECRET_KEY, or neither.');
+  }
+  const mailjet = Boolean(mailjetApiKey);
+  const contactListId = process.env.MAILJET_CONTACT_LIST_ID?.trim() || '';
+  if (contactListId && !/^\d{1,12}$/.test(contactListId)) {
+    throw new Error('MAILJET_CONTACT_LIST_ID must be the numeric Mailjet contact list ID.');
+  }
+  return {
+    mailjetApiKey,
+    mailjetSecretKey,
+    mailjetContactListId: contactListId,
+    smtpHost: process.env.SMTP_HOST?.trim() || (mailjet ? 'in-v3.mailjet.com' : ''),
+    smtpPort: positiveInteger('SMTP_PORT', 587),
+    smtpSecure: process.env.SMTP_SECURE === 'true',
+    smtpUser: process.env.SMTP_USER || mailjetApiKey,
+    smtpPassword: process.env.SMTP_PASSWORD || mailjetSecretKey,
+    smtpFrom: process.env.SMTP_FROM?.trim() || '',
+    storeName: process.env.STORE_NAME?.trim() || 'Silveram',
+    storeUrl: (process.env.STORE_URL?.trim() || '').replace(/\/+$/, ''),
+    supportEmail: process.env.SUPPORT_EMAIL?.trim() || '',
+  };
+}
+
 export function loadConfig() {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS || (nodeEnv === 'production' ? 1 : 0));
@@ -48,6 +77,11 @@ export function loadConfig() {
   const liveCheckout = process.env.STORE_LIVE_CHECKOUT === 'true';
   if (razorpayEnabled && (!liveCheckout || !process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET || !process.env.RAZORPAY_WEBHOOK_SECRET)) {
     throw new Error('Enable Razorpay only after checkout is enabled and all Razorpay keys are configured.');
+  }
+
+  const storeUrl = process.env.STORE_URL?.trim();
+  if (storeUrl && (!/^https?:\/\//.test(storeUrl) || (nodeEnv === 'production' && !storeUrl.startsWith('https://')))) {
+    throw new Error('STORE_URL must be the public website URL (HTTPS in production).');
   }
 
   const cloudinaryVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
@@ -90,12 +124,7 @@ export function loadConfig() {
     otpTtlMinutes: positiveInteger('OTP_TTL_MINUTES', 10),
     otpMaxAttempts: positiveInteger('OTP_MAX_ATTEMPTS', 5),
     otpResendSeconds: positiveInteger('OTP_RESEND_SECONDS', 60),
-    smtpHost: process.env.SMTP_HOST?.trim() || '',
-    smtpPort: positiveInteger('SMTP_PORT', 587),
-    smtpSecure: process.env.SMTP_SECURE === 'true',
-    smtpUser: process.env.SMTP_USER || '',
-    smtpPassword: process.env.SMTP_PASSWORD || '',
-    smtpFrom: process.env.SMTP_FROM?.trim() || '',
+    ...mailConfig(),
     razorpayKeyId: process.env.RAZORPAY_KEY_ID?.trim() || '',
     razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || '',
     razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',

@@ -8,6 +8,7 @@ import { createOrdersRouter } from './routes/orders.js';
 import { createAdminRouter } from './routes/admin.js';
 import { createUploadsRouter } from './routes/uploads.js';
 import { createWebhookRouter } from './routes/webhooks.js';
+import { createNewsletterRouter } from './routes/newsletter.js';
 import { checkDatabase } from './db.js';
 
 export function createApp(config) {
@@ -37,6 +38,7 @@ export function createApp(config) {
   app.use('/api/products', createProductsRouter(config));
   app.use('/api/uploads', createUploadsRouter(config));
   app.use('/api/orders', createOrdersRouter(config));
+  app.use('/api/newsletter', createNewsletterRouter(config));
   app.use('/api/admin', createAdminRouter(config));
 
   app.use((req, res) => res.status(404).json({ error: 'Route not found.' }));

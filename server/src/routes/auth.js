@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { createTransport } from 'nodemailer';
 import { z } from 'zod';
 import { collections } from '../db.js';
+import { getMailer } from '../mail/transport.js';
 import { consumeRateLimit, createOpaqueToken, createOtp, hashToken, otpDigest, safeEqualHex } from '../security.js';
 
 const emailSchema = z.string().trim().email().max(254).transform((email) => email.toLowerCase());
@@ -25,15 +25,7 @@ function setSessionCookie(res, token, config) {
 
 export function createAuthRouter(config) {
   const router = Router();
-  const mailer =
-    config.smtpHost && config.smtpUser && config.smtpPassword && config.smtpFrom
-      ? createTransport({
-          host: config.smtpHost,
-          port: config.smtpPort,
-          secure: config.smtpSecure,
-          auth: { user: config.smtpUser, pass: config.smtpPassword },
-        })
-      : null;
+  const mailer = getMailer(config);
 
   router.post('/otp', async (req, res, next) => {
     try {
