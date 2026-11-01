@@ -9,6 +9,7 @@ The storefront uses a Node.js/Express API and MongoDB Atlas. The browser never c
 - `server/.env` is configured locally with the Atlas URI and separate random app secrets. It is Git-ignored and its Windows ACL grants access only to the current Windows user. Never copy it into chat, source control, or a frontend build; production must use the deployment secret manager.
 - The app connected successfully, its seven collections and indexes were provisioned, and five sample catalog records were seeded inactive with zero stock. Real product information and inventory are not configured.
 - SMTP, production admin allowlist, Razorpay, production origins, backups, and deployment settings remain unconfigured, so checkout stays disabled. A free cluster is not sufficient for the requested production-ready real-world workload.
+- Mailjet integration supports OTP/order email through SMTP and an opt-in newsletter contact list through the REST API. Production sending still requires rotated credentials, a verified sender/domain with SPF/DKIM, the correct contact-list ID, and a production smoke test.
 - Checkout is off by default (`STORE_LIVE_CHECKOUT=false` and `VITE_CHECKOUT_ENABLED=false`). Do not enable production checkout until this guide's launch checklist is complete.
 - Replace sample catalog details with verified product information and explicitly set actual inventory before listing anything for sale.
 
@@ -70,6 +71,7 @@ MongoDB stores image references, not image binaries. Current demo images are ser
 - CORS allows only explicit `FRONTEND_ORIGINS`. Never use `*` with credentials. Set `NODE_ENV=production` in deployment and set `TRUST_PROXY_HOPS` to the exact number of trusted ingress proxies; an incorrect value can make IP-based rate limits unreliable.
 - Helmet security headers, JSON body-size limits, Zod request validation, escaped/static product images, parameterized MongoDB queries, and server-side price calculation are used.
 - Do not expose MongoDB, SMTP, Razorpay, OTP, or session secrets as `VITE_*` variables. Do not grant the web client database credentials.
+- Mailjet: put the API key pair, sender address, and contact-list ID only in the API host's secret manager. Verify the sender/domain in Mailjet and publish its SPF/DKIM records before sending. The API uses the key pair for SMTP at `in-v3.mailjet.com:587` and REST contact-list management. Campaigns are created/sent in Mailjet; use Mailjet's campaign unsubscribe links and honor opt-outs. The storefront newsletter checkbox is separate from required order/sign-in email. Set `VITE_NEWSLETTER_ENABLED=true` only when the API's Mailjet contact-list ID is configured; it defaults off. Checkout refuses to start without a configured transactional sender.
 - Checkout requires a verified email, recipient name, 10-digit Indian phone, street address, city, state, and six-digit PIN. COD stock decrement/order creation is transactional; order details are restricted to the owner and allowlisted admins.
 - Online payment is disabled in both layers by default (`VITE_RAZORPAY_ENABLED=false`, `RAZORPAY_ENABLED=false`). Provider code is isolated in `server/src/payments/razorpay/`; only enable it after account activation, payment tests, webhook setup, and reliable expired-reservation scheduling.
 
@@ -146,7 +148,7 @@ Vercel deployment cannot be completed from this workspace without linking your V
 ## Production launch checklist
 
 - [ ] MongoDB cluster, dedicated database user, TLS, restricted network access, required indexes, backup/restore test, and monitoring are verified.
-- [ ] SMTP sender/domain passes SPF/DKIM/DMARC; deliverability, OTP expiry, resend limits, and brute-force limits are tested.
+- [ ] Mailjet credentials are newly issued (never copied from chat), SMTP sender/domain passes verification and SPF/DKIM/DMARC checks, the correct newsletter contact-list ID is configured, and test OTP, COD confirmation, campaign, and unsubscribe flows have been verified.
 - [ ] Production site origins, TLS, trusted proxy/IP settings, and cookie behavior are verified.
 - [ ] Admin addresses are correct and each authorized staff member has verified their own email.
 - [ ] Real product materials, price/tax treatment, image rights, stock counts, shipping charges/coverage, invoices, and published legal/privacy/return policies are approved.

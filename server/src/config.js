@@ -78,6 +78,10 @@ export function loadConfig() {
   if (razorpayEnabled && (!liveCheckout || !process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET || !process.env.RAZORPAY_WEBHOOK_SECRET)) {
     throw new Error('Enable Razorpay only after checkout is enabled and all Razorpay keys are configured.');
   }
+  const mail = mailConfig();
+  if (liveCheckout && (!mail.smtpHost || !mail.smtpUser || !mail.smtpPassword || !mail.smtpFrom)) {
+    throw new Error('Live checkout requires SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM so customers can receive order confirmations.');
+  }
 
   const storeUrl = process.env.STORE_URL?.trim();
   if (storeUrl && (!/^https?:\/\//.test(storeUrl) || (nodeEnv === 'production' && !storeUrl.startsWith('https://')))) {
@@ -124,7 +128,7 @@ export function loadConfig() {
     otpTtlMinutes: positiveInteger('OTP_TTL_MINUTES', 10),
     otpMaxAttempts: positiveInteger('OTP_MAX_ATTEMPTS', 5),
     otpResendSeconds: positiveInteger('OTP_RESEND_SECONDS', 60),
-    ...mailConfig(),
+    ...mail,
     razorpayKeyId: process.env.RAZORPAY_KEY_ID?.trim() || '',
     razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || '',
     razorpayWebhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',

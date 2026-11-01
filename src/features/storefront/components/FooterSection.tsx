@@ -1,8 +1,10 @@
+import { useState, type FormEvent } from 'react';
 import { InstagramIcon, WhatsAppIcon } from '@/shared/ui/icons';
 import { SITE } from '@/shared/config/site';
 import { PRODUCTS, productPath } from '@/features/products/data/products';
 import { buildGeneralMessage, buildWhatsAppUrl } from '@/features/whatsapp';
 import { POLICIES, type PolicyId } from '@/features/policies/data/policies';
+import { apiRequest, isNewsletterEnabled } from '@/shared/lib/api';
 
 interface FooterSectionProps {
   onOpenPolicy: (id: PolicyId) => void;
@@ -12,8 +14,31 @@ const linkClass =
   'type-body inline-flex min-h-11 items-center text-surface-primary/80 underline-offset-4 hover:text-surface-primary hover:underline';
 
 export default function FooterSection({ onOpenPolicy }: FooterSectionProps) {
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterConsent, setNewsletterConsent] = useState(false);
+  const [newsletterBusy, setNewsletterBusy] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState('');
   const whatsappUrl = buildWhatsAppUrl(buildGeneralMessage());
   const hasContact = Boolean(whatsappUrl || SITE.instagramUrl || SITE.contactEmail);
+
+  async function submitNewsletter(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setNewsletterBusy(true);
+    setNewsletterMessage('');
+    try {
+      await apiRequest('/newsletter/subscribe', {
+        method: 'POST',
+        body: JSON.stringify({ email: newsletterEmail, consent: newsletterConsent }),
+      });
+      setNewsletterEmail('');
+      setNewsletterConsent(false);
+      setNewsletterMessage('Thanks for subscribing. You can unsubscribe from any marketing email.');
+    } catch (error) {
+      setNewsletterMessage(error instanceof Error ? error.message : 'Unable to subscribe right now. Please try again.');
+    } finally {
+      setNewsletterBusy(false);
+    }
+  }
 
   return (
     <footer id="contact" className="on-navy bg-brand-primary text-surface-primary">
@@ -83,6 +108,51 @@ export default function FooterSection({ onOpenPolicy }: FooterSectionProps) {
           </ul>
           {!hasContact && (
             <p className="type-body mt-3 text-surface-primary/80">Contact details coming soon.</p>
+          )}
+          {isNewsletterEnabled && (
+            <form className="mt-8" onSubmit={submitNewsletter}>
+              <label htmlFor="newsletter-email" className="type-eyebrow text-accent-silver">
+                Silveram updates
+              </label>
+              <p className="type-body mt-2 text-surface-primary/80">
+                Product news and occasional offers, only if you opt in.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  maxLength={254}
+                  value={newsletterEmail}
+                  onChange={(event) => setNewsletterEmail(event.target.value)}
+                  placeholder="Email address"
+                  className="min-w-0 flex-1 rounded-[2px] border border-accent-silver/50 bg-transparent px-3 py-2 text-sm text-surface-primary placeholder:text-surface-primary/60"
+                />
+                <button
+                  type="submit"
+                  disabled={newsletterBusy || !newsletterConsent}
+                  className="min-h-11 rounded-[2px] border border-accent-silver px-3 text-sm font-medium text-surface-primary hover:bg-surface-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {newsletterBusy ? 'Joining…' : 'Join'}
+                </button>
+              </div>
+              <label className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-surface-primary/80">
+                <input
+                  type="checkbox"
+                  required
+                  checked={newsletterConsent}
+                  onChange={(event) => setNewsletterConsent(event.target.checked)}
+                  className="mt-0.5 accent-accent-silver"
+                />
+                <span>
+                  I agree to receive marketing emails. I can unsubscribe at any time. Order and sign-in emails are separate.
+                </span>
+              </label>
+              <p className="mt-2 text-xs text-surface-primary/80" role="status" aria-live="polite">
+                {newsletterMessage}
+              </p>
+            </form>
           )}
         </div>
       </div>

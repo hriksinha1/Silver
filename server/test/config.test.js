@@ -16,6 +16,18 @@ const configNames = [
   'RAZORPAY_KEY_ID',
   'RAZORPAY_KEY_SECRET',
   'RAZORPAY_WEBHOOK_SECRET',
+  'MAILJET_API_KEY',
+  'MAILJET_SECRET_KEY',
+  'MAILJET_CONTACT_LIST_ID',
+  'SMTP_HOST',
+  'SMTP_PORT',
+  'SMTP_SECURE',
+  'SMTP_USER',
+  'SMTP_PASSWORD',
+  'SMTP_FROM',
+  'STORE_NAME',
+  'STORE_URL',
+  'SUPPORT_EMAIL',
 ];
 
 function configure(t, values) {
@@ -59,4 +71,23 @@ test('Razorpay cannot be enabled before checkout and provider credentials are co
     RAZORPAY_ENABLED: 'true',
   });
   assert.throws(() => loadConfig(), /Enable Razorpay only after checkout is enabled/);
+});
+
+test('live checkout requires a configured transactional email sender', (t) => {
+  configure(t, {
+    NODE_ENV: 'production',
+    FRONTEND_ORIGINS: 'https://silveram.example',
+    STORE_LIVE_CHECKOUT: 'true',
+  });
+  assert.throws(() => loadConfig(), /Live checkout requires SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM/);
+
+  Object.assign(process.env, {
+    SMTP_HOST: 'in-v3.mailjet.com',
+    SMTP_USER: 'mailjet-api-key',
+    SMTP_PASSWORD: 'mailjet-secret-key',
+    SMTP_FROM: 'Silveram <orders@silveram.example>',
+  });
+  const config = loadConfig();
+  assert.equal(config.liveCheckout, true);
+  assert.equal(config.smtpHost, 'in-v3.mailjet.com');
 });

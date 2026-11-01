@@ -6,6 +6,7 @@ import { consumeRateLimit } from '../security.js';
 const schema = z.object({
   email: z.string().trim().email().max(254).transform((email) => email.toLowerCase()),
   name: z.string().trim().max(100).optional(),
+  consent: z.literal(true),
 }).strict();
 
 export function createNewsletterRouter(config) {

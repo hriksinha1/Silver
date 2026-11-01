@@ -34,6 +34,8 @@ export const POLICIES: Record<PolicyId, Policy> = {
     paragraphs: [
       'Your bag is stored only in this browser. It is not sent to Silveram unless you choose to share it.',
       'When you use a WhatsApp button, the message you send, together with your WhatsApp number, is shared with Silveram through WhatsApp.',
+      'If you place an order or request a sign-in code, Silveram uses your email address to send service messages about that request. Marketing emails are sent only if you separately opt in using the newsletter form. You can unsubscribe from marketing emails using the link in each campaign email; unsubscribing does not affect service messages.',
+      'Newsletter subscriptions are managed by Mailjet. Your email address and any name you provide are shared with Mailjet to manage that subscription.',
     ],
     pendingNote: '',
   },

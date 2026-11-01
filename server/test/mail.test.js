@@ -47,6 +47,6 @@ test('mailjet keys derive SMTP settings and must come as a pair', () => {
 });
 
 function t_env(values) {
-  for (const k of ['NODE_ENV', 'SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD', 'MAILJET_CONTACT_LIST_ID', 'STORE_URL']) delete process.env[k];
+  for (const k of ['NODE_ENV', 'SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM', 'MAILJET_CONTACT_LIST_ID', 'STORE_URL']) delete process.env[k];
   Object.assign(process.env, values);
 }

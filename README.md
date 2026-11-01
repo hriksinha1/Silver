@@ -90,6 +90,7 @@ For Atlas provisioning, collection/index details, safe CRUD, deployment secrets,
 4. Checkout collects recipient name, Indian mobile number, street address, city, state, and PIN code.
 5. The API validates the signed-in customer and delivery details, calculates prices from MongoDB, checks inventory, and writes the COD order plus stock decrement in a MongoDB transaction.
 6. Customers can view only their own orders. Allowlisted admins manage catalog/fulfillment; cancelling eligible COD orders restores inventory transactionally.
+7. Order confirmations are sent through the configured SMTP relay after a COD order is placed or an online payment is verified/captured. The footer newsletter form separately collects explicit marketing consent and adds opted-in contacts to the configured Mailjet list; campaign sends and unsubscribe handling are managed in Mailjet.
 
 Checkout is gated in both frontend and API (`VITE_CHECKOUT_ENABLED=false`, `STORE_LIVE_CHECKOUT=false`). The COD path is implemented, but cannot create orders until all launch conditions and staging tests pass.
 
@@ -97,7 +98,7 @@ Checkout is gated in both frontend and API (`VITE_CHECKOUT_ENABLED=false`, `STOR
 
 Online payments are intentionally not offered at launch. Provider code and the handoff checklist are in [`server/src/payments/razorpay/README.md`](./server/src/payments/razorpay/README.md). The integration is independently gated by `VITE_RAZORPAY_ENABLED=false` and `RAZORPAY_ENABLED=false`. Keep both false until the merchant account, test/live credentials, webhooks, payment reconciliation, and reservation-expiry worker have been completed and verified.
 
-Never put Razorpay secrets, Atlas credentials, SMTP passwords, session secrets, or OTP peppers into `VITE_*` variables, source files, commits, chat, or issue trackers.
+Never put Razorpay secrets, Atlas credentials, Mailjet keys, SMTP passwords, session secrets, or OTP peppers into `VITE_*` variables, source files, commits, chat, or issue trackers. If a key has been shared in chat or another public channel, revoke it and issue a replacement before use.
 
 ## Development checks
 
@@ -121,7 +122,7 @@ The project is **not production-ready for real orders yet**. The free Atlas clus
 ## Design system and WhatsApp ordering
 
 - Midnight Silver tokens live in `src/styles/tokens.css`; League Spartan is the only font (`@fontsource-variable/league-spartan`).
-- Public settings (`.env.example`): `VITE_WHATSAPP_NUMBER` (Indian mobile), optional `VITE_INSTAGRAM_URL`, `VITE_CONTACT_EMAIL`. Without a WhatsApp number the UI shows a "contact pending" state. Online checkout and Razorpay stay disabled (`VITE_CHECKOUT_ENABLED`/`VITE_RAZORPAY_ENABLED` = false and server gates).
+- Public settings (`.env.example`): `VITE_WHATSAPP_NUMBER` (Indian mobile), optional `VITE_INSTAGRAM_URL`, `VITE_CONTACT_EMAIL`, and `VITE_NEWSLETTER_ENABLED`. Enable newsletter signup only after a Mailjet contact list is configured; it defaults off. Without a WhatsApp number the UI shows a "contact pending" state. Online checkout and Razorpay stay disabled (`VITE_CHECKOUT_ENABLED`/`VITE_RAZORPAY_ENABLED` = false and server gates).
 - Policy text: `src/features/policies/data/policies.ts`. FAQ and page copy: `src/features/storefront/data/content.ts`.
 
 ## Replacing the three placeholder products
